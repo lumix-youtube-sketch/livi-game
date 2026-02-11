@@ -12,8 +12,7 @@ const verifyTelegramWebAppData = (telegramInitData) => {
   const hash = arr.splice(hashIndex, 1)[0].split('=')[1];
   
   arr.sort((a, b) => a.localeCompare(b));
-  const dataCheckString = arr.join('
-');
+  const dataCheckString = arr.join('\n');
   
   const _hash = crypto
     .createHmac('sha256', secret)
@@ -26,7 +25,6 @@ const verifyTelegramWebAppData = (telegramInitData) => {
 module.exports = async (req, res, next) => {
   // For development without real bot token/data
   if (process.env.SKIP_AUTH === 'true') {
-     // Mock user for dev
      req.user = { id: 12345, first_name: 'TestUser', username: 'testuser' };
      return next();
   }
@@ -35,11 +33,6 @@ module.exports = async (req, res, next) => {
   if (!initData) return res.status(401).json({ error: 'No authorization data' });
 
   try {
-    // In production, validate signature:
-    // const isValid = verifyTelegramWebAppData(initData);
-    // if (!isValid) return res.status(403).json({ error: 'Invalid signature' });
-    
-    // Parse user data
     const urlParams = new URLSearchParams(initData);
     const user = JSON.parse(urlParams.get('user'));
     
