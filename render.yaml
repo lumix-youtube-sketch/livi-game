@@ -1,0 +1,28 @@
+services:
+  # Backend
+  - type: web
+    name: livi-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: SKIP_AUTH
+        value: "true"
+      - key: MONGO_URI
+        sync: false
+      - key: BOT_TOKEN
+        sync: false
+
+  # Frontend
+  - type: static
+    name: livi-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
