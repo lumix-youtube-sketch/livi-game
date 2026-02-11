@@ -22,6 +22,7 @@ api.interceptors.request.use((config) => {
 
 export const login = () => api.post('/auth');
 export const joinPair = (targetUserId) => api.post('/pair/join', { targetUserId });
+export const createSoloPet = () => api.post('/pet/create-solo');
 export const performAction = (type) => api.post('/pet/action', { type });
 export const uploadClothing = (formData) => api.post('/pet/upload', formData, {
   headers: { 'Content-Type': 'multipart/form-data' }

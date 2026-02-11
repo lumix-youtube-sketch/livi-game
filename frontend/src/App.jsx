@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import WebApp from '@twa-dev/sdk';
-import { login, joinPair } from './api';
+import { login, joinPair, createSoloPet } from './api';
 import Pet from './components/Pet';
 import Actions from './components/Actions';
 
@@ -11,7 +11,6 @@ function App() {
   const [pairIdInput, setPairIdInput] = useState('');
 
   useEffect(() => {
-    // Initialize Telegram WebApp
     WebApp.ready();
     WebApp.expand();
 
@@ -35,7 +34,6 @@ function App() {
     try {
       const res = await joinPair(pairIdInput);
       setPet(res.data.pet);
-      // Re-fetch user to update pairId status
       const userRes = await login(); 
       setUser(userRes.data.user);
     } catch (err) {
@@ -43,8 +41,18 @@ function App() {
     }
   };
 
-  if (loading) return <div>Loading Livi...</div>;
+  const handleCreateSolo = async () => {
+    try {
+      const res = await createSoloPet();
+      setPet(res.data.pet);
+      const userRes = await login();
+      setUser(userRes.data.user);
+    } catch (err) {
+      alert('Failed to create: ' + (err.response?.data?.error || err.message));
+    }
+  };
 
+  if (loading) return <div>Loading Livi...</div>;
   if (!user) return <div>Error loading user data.</div>;
 
   return (
@@ -57,27 +65,27 @@ function App() {
       {!pet ? (
         <div style={{ padding: '20px', textAlign: 'center' }}>
           <h3>Welcome to Livi!</h3>
-          <p>This is a co-op pet game.</p>
-          <p>To start, you need to pair up with a friend.</p>
           
-          <div style={{ margin: '20px 0', border: '1px solid #ddd', padding: '15px', borderRadius: '8px' }}>
-            <p><strong>Option 1:</strong> Share your Telegram ID with a friend:</p>
-            <code style={{ background: '#eee', padding: '5px', fontSize: '1.2em' }}>{user.telegramId}</code>
+          <div style={{ margin: '15px 0', border: '1px solid #ddd', padding: '10px', borderRadius: '8px', background: '#e8f5e9' }}>
+            <p><strong>Quick Start:</strong></p>
+            <button onClick={handleCreateSolo} style={{ padding: '10px 20px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
+              🐾 Create My Pet
+            </button>
           </div>
 
-          <div style={{ margin: '20px 0', border: '1px solid #ddd', padding: '15px', borderRadius: '8px' }}>
-            <p><strong>Option 2:</strong> Enter your friend's Telegram ID to join them:</p>
-            <input 
-              type="text" 
-              placeholder="Friend's Telegram ID" 
-              value={pairIdInput}
-              onChange={(e) => setPairIdInput(e.target.value)}
-              style={{ padding: '8px', width: '80%' }}
-            />
-            <br/><br/>
-            <button onClick={handleJoin} style={{ padding: '10px 20px', background: '#3390ec', color: 'white', border: 'none', borderRadius: '4px' }}>
-              Start Game Together
-            </button>
+          <div style={{ margin: '15px 0', border: '1px solid #ddd', padding: '10px', borderRadius: '8px' }}>
+            <p><strong>Or Play with a Friend:</strong></p>
+            <code style={{ background: '#eee', padding: '5px' }}>ID: {user.telegramId}</code>
+            <div style={{ marginTop: '10px' }}>
+              <input 
+                type="text" 
+                placeholder="Friend's ID" 
+                value={pairIdInput}
+                onChange={(e) => setPairIdInput(e.target.value)}
+                style={{ padding: '5px', width: '60%' }}
+              />
+              <button onClick={handleJoin} style={{ padding: '5px 10px', marginLeft: '5px' }}>Join</button>
+            </div>
           </div>
         </div>
       ) : (

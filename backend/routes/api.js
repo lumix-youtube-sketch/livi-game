@@ -155,4 +155,28 @@ router.post('/pet/upload', auth, upload.single('image'), async (req, res) => {
   }
 });
 
+// Create Solo Pet
+router.post('/pet/create-solo', auth, async (req, res) => {
+  try {
+    const user = await User.findOne({ telegramId: req.user.id });
+    if (user.pairId) return res.status(400).json({ error: 'Already has a pet' });
+
+    const pet = new Pet({ users: [user._id] });
+    await pet.save();
+
+    const pair = new Pair({
+      users: [user._id],
+      pet: pet._id
+    });
+    await pair.save();
+
+    user.pairId = pair._id;
+    await user.save();
+
+    res.json({ pet });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
