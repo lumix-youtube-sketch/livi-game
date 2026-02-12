@@ -40,6 +40,7 @@ const petSchema = new mongoose.Schema({
   // Inventory
   inventory: [{ type: String }], 
   
+  createdAt: { type: Date, default: Date.now },
   lastInteraction: { type: Date, default: Date.now }
 }, {
   toJSON: { flattenMaps: true },

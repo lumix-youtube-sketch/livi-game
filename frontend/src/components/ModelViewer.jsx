@@ -1,6 +1,6 @@
-import React, { Suspense, useRef, useState } from 'react';
+import React, { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
-import { Float, OrbitControls, ContactShadows, useCursor, PerspectiveCamera, Sparkles, Environment, Stars } from '@react-three/drei';
+import { Float, OrbitControls, ContactShadows, useCursor, PerspectiveCamera, Sparkles, Environment } from '@react-three/drei';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
 
@@ -38,17 +38,32 @@ const Accessory = ({ type, id, isPreview, textureUrl, shape }) => {
   return null;
 };
 
-// --- PET MODEL ---
+// --- PREMIUM PET MODEL ---
 const PetModel = ({ color, shape, accessories, customTextures, onClick }) => {
   const meshRef = useRef();
   const faceRef = useRef();
   const { viewport, mouse } = useThree();
   const [hovered, setHover] = useState(false);
+  const [isBlinking, setBlinking] = useState(false);
   useCursor(hovered);
+
+  // Random Blinking
+  useEffect(() => {
+    const blink = () => {
+        setBlinking(true);
+        setTimeout(() => setBlinking(false), 150);
+        setTimeout(blink, Math.random() * 4000 + 2000);
+    };
+    const tid = setTimeout(blink, 2000);
+    return () => clearTimeout(tid);
+  }, []);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
-    if (meshRef.current) meshRef.current.position.y = Math.sin(t * 3) * 0.05;
+    if (meshRef.current) {
+        meshRef.current.position.y = Math.sin(t * 2) * 0.04;
+        meshRef.current.rotation.y = Math.sin(t * 0.5) * 0.1;
+    }
     if (faceRef.current) {
         const x = (mouse.x * viewport.width) / 30;
         const y = (mouse.y * viewport.height) / 30;
@@ -60,19 +75,42 @@ const PetModel = ({ color, shape, accessories, customTextures, onClick }) => {
   return (
     <group onClick={onClick} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
       <group ref={meshRef}>
+          {/* Body: High-quality Material */}
           <mesh castShadow receiveShadow>
-            {shape === 'round' ? <sphereGeometry args={[0.65, 32, 32]} /> : 
+            {shape === 'round' ? <sphereGeometry args={[0.65, 64, 64]} /> : 
              shape === 'boxy' ? <boxGeometry args={[0.85, 0.85, 0.85]} /> :
-             <capsuleGeometry args={[0.5, 0.8, 8, 16]} />}
-            <meshStandardMaterial color={color || '#8c52ff'} roughness={0.4} />
+             <capsuleGeometry args={[0.5, 0.8, 16, 32]} />}
+            <meshPhysicalMaterial 
+                color={color || '#8c52ff'} 
+                roughness={0.2} 
+                metalness={0.1} 
+                clearcoat={1} 
+                clearcoatRoughness={0.1}
+                transmission={0.1}
+                thickness={0.5}
+            />
           </mesh>
+
           <Accessory type="head" id={accessories?.head} shape={shape} textureUrl={customTextures?.head} />
           <Accessory type="body" id={accessories?.body} shape={shape} textureUrl={customTextures?.body} />
           <Accessory type="legs" id={accessories?.legs} shape={shape} textureUrl={customTextures?.legs} />
-          <group ref={faceRef} position={[0, 0.15, 0.46]}>
-              <mesh position={[-0.18, 0, 0]}><capsuleGeometry args={[0.06, 0.08, 4, 8]} /><meshStandardMaterial color="#111" roughness={0.1} /></mesh>
-              <mesh position={[0.18, 0, 0]}><capsuleGeometry args={[0.06, 0.08, 4, 8]} /><meshStandardMaterial color="#111" roughness={0.1} /></mesh>
-              <mesh position={[0, -0.1, 0]}><torusGeometry args={[0.04, 0.015, 8, 16, Math.PI]} rotation={[0,0,Math.PI]} /><meshBasicMaterial color="#111" /></mesh>
+
+          {/* Cute Face */}
+          <group ref={faceRef} position={[0, 0.15, 0.48]}>
+              {/* Eyes */}
+              <mesh position={[-0.18, 0, 0]} scale={[1, isBlinking ? 0.1 : 1, 1]}>
+                  <sphereGeometry args={[0.07, 32, 32]} />
+                  <meshStandardMaterial color="#111" roughness={0} />
+              </mesh>
+              <mesh position={[0.18, 0, 0]} scale={[1, isBlinking ? 0.1 : 1, 1]}>
+                  <sphereGeometry args={[0.07, 32, 32]} />
+                  <meshStandardMaterial color="#111" roughness={0} />
+              </mesh>
+              {/* Mouth */}
+              <mesh position={[0, -0.1, 0]}>
+                  <torusGeometry args={[0.04, 0.015, 8, 16, Math.PI]} rotation={[0,0,Math.PI]} />
+                  <meshBasicMaterial color="#111" />
+              </mesh>
           </group>
       </group>
     </group>
@@ -80,26 +118,26 @@ const PetModel = ({ color, shape, accessories, customTextures, onClick }) => {
 };
 
 const Background = ({ id }) => {
-    if (id === 'bg_space') return <group><Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /><Sparkles count={50} scale={10} size={2} color="white" /></group>;
+    if (id === 'bg_space') return <Sparkles count={150} scale={10} size={2} speed={0.3} color="white" />;
     if (id === 'bg_park') return <Environment preset="park" background blur={0.5} />;
     if (id === 'bg_room') return <Environment preset="apartment" background blur={0.7} />;
     return null;
 };
 
-const ModelViewer = ({ type, itemId, color, shape, accessories, customTextures, background, activeAction, onPetClick, style, isLobby }) => {
+const ModelViewer = ({ type, itemId, color, shape, accessories, customTextures, background, onPetClick, style, isLobby }) => {
   return (
     <div style={{ width: '100%', height: '100%', minHeight: '100px', ...style }}>
-      <Canvas shadows dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
-        {!isLobby && background && <color attach="background" args={[background === 'bg_space' ? '#020205' : '#0f0f14']} />}
+      <Canvas shadows dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
         <PerspectiveCamera makeDefault position={[0, 0, isLobby ? 5.5 : 6]} fov={35} />
         <ambientLight intensity={0.8} />
-        <directionalLight position={[5, 8, 5]} intensity={1.2} castShadow />
+        <directionalLight position={[5, 8, 5]} intensity={1.5} castShadow />
+        <pointLight position={[-5, 2, -5]} intensity={0.5} color="#a29bfe" />
         
         <Suspense fallback={null}>
-          <group position={[0, -0.5, 0]}>
+          <group position={[0, -0.3, 0]}>
              {type === 'pet' && <PetModel color={color} shape={shape} accessories={accessories} customTextures={customTextures} onClick={onPetClick} />}
              {type === 'preview' && itemId && <Float speed={3} rotationIntensity={1}><Accessory type={itemId.split('_')[0]} id={itemId} isPreview={itemId} shape="capsule" /></Float>}
-             {type === 'coin' && <group rotation={[Math.PI/2, 0, 0]}><mesh><cylinderGeometry args={[0.5, 0.5, 0.1, 32]} /><meshStandardMaterial color="#ffd700" metalness={0.8} /></mesh></group>}
+             {type === 'coin' && <group rotation={[Math.PI/2, 0, 0]}><mesh castShadow><cylinderGeometry args={[0.5, 0.5, 0.1, 32]} /><meshStandardMaterial color="#ffd700" metalness={0.8} /></mesh></group>}
              <ContactShadows opacity={0.4} scale={10} blur={2.5} far={1.5} color="#000" />
           </group>
           {!isLobby && <Background id={background} />}
