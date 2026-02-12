@@ -1,31 +1,41 @@
 import axios from 'axios';
 import WebApp from '@twa-dev/sdk';
 
-// На Render мы передадим этот URL через переменные окружения
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = 'https://livi-backend.onrender.com/api'; 
+// For local dev: 'http://localhost:3000/api'
 
-const api = axios.create({
-  baseURL: API_URL,
-});
+// Auth & Init
+export const login = async () => {
+  const user = WebApp.initDataUnsafe?.user || { id: '999', first_name: 'DevUser', username: 'dev' };
+  return axios.post(`${API_URL}/auth`, {
+    telegramId: user.id.toString(),
+    username: user.username,
+    firstName: user.first_name
+  });
+};
 
-api.interceptors.request.use((config) => {
-  // Attach Telegram Init Data for Auth
-  if (WebApp.initData) {
-    config.headers.Authorization = WebApp.initData;
-  } else {
-    // Fallback for local browser testing without Telegram
-    // In backend .env set SKIP_AUTH=true
-    config.headers.Authorization = 'mock_init_data'; 
-  }
-  return config;
-});
+// Create Pet
+export const createPet = (partnerId = null, name = 'Livi') => {
+  const user = WebApp.initDataUnsafe?.user || { id: '999' };
+  return axios.post(`${API_URL}/pet/create`, {
+    telegramId: user.id.toString(),
+    partnerId,
+    name
+  });
+};
 
-export const login = () => api.post('/auth');
-export const joinPair = (targetUserId) => api.post('/pair/join', { targetUserId });
-export const createSoloPet = () => api.post('/pet/create-solo');
-export const performAction = (type) => api.post('/pet/action', { type });
-export const uploadClothing = (formData) => api.post('/pet/upload', formData, {
-  headers: { 'Content-Type': 'multipart/form-data' }
-});
+// Actions
+export const performAction = (petId, type) => {
+  return axios.post(`${API_URL}/pet/${petId}/action`, { type });
+};
 
-export default api;
+// Shop
+export const getShop = () => axios.get(`${API_URL}/shop`);
+
+export const buyItem = (petId, itemId) => {
+  return axios.post(`${API_URL}/pet/${petId}/buy`, { itemId });
+};
+
+export const equipItem = (petId, itemId, type) => {
+  return axios.post(`${API_URL}/pet/${petId}/equip`, { itemId, type });
+};

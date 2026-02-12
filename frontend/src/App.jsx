@@ -1,29 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import WebApp from '@twa-dev/sdk';
-import { login, joinPair, createSoloPet } from './api';
-import Pet from './components/Pet';
-import Actions from './components/Actions';
-import ModelViewer from './components/ModelViewer';
-import { motion } from 'framer-motion';
-import { Users, UserPlus, Sparkles, Trophy } from 'lucide-react';
+import { login, createPet } from './api';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Users, Plus, Trophy, Sparkles } from 'lucide-react';
+
+// Lazy Load Heavy Components
+const Pet = React.lazy(() => import('./components/Pet'));
+const Actions = React.lazy(() => import('./components/Actions'));
 
 function App() {
   const [user, setUser] = useState(null);
-  const [pet, setPet] = useState(null);
+  const [pets, setPets] = useState([]);
+  const [currentPet, setCurrentPet] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [pairIdInput, setPairIdInput] = useState('');
-  const [activeAction, setActiveAction] = useState(null); // 'feed', 'play', etc.
+  const [view, setView] = useState('loading'); // loading | lobby | game
+  const [partnerInput, setPartnerInput] = useState('');
 
   useEffect(() => {
     WebApp.ready();
     WebApp.expand();
-    WebApp.setHeaderColor('#f5f7fa'); 
+    WebApp.setHeaderColor('#0f0f14'); 
+    WebApp.setBackgroundColor('#0f0f14');
 
     const initAuth = async () => {
       try {
         const res = await login();
         setUser(res.data.user);
-        setPet(res.data.pet);
+        setPets(res.data.pets || []);
+        setView(res.data.pets.length > 0 ? 'lobby' : 'lobby'); // Always go to lobby first
       } catch (err) {
         console.error('Login failed', err);
       } finally {
@@ -33,142 +37,104 @@ function App() {
     initAuth();
   }, []);
 
-  const handleJoin = async () => {
-    if (!pairIdInput) return;
+  const handleCreatePet = async (isSolo) => {
     try {
-      const res = await joinPair(pairIdInput);
-      setPet(res.data.pet);
-      const userRes = await login(); 
-      setUser(userRes.data.user);
+      const partnerId = isSolo ? null : partnerInput;
+      const res = await createPet(partnerId);
+      setPets([...pets, res.data.pet]);
+      setCurrentPet(res.data.pet);
+      setView('game');
     } catch (err) { alert(err.response?.data?.error || 'Error'); }
   };
 
-  const handleCreateSolo = async () => {
-    try {
-      const res = await createSoloPet();
-      setPet(res.data.pet);
-      const userRes = await login();
-      setUser(userRes.data.user);
-    } catch (err) { alert(err.response?.data?.error || 'Error'); }
-  };
-
-  const triggerActionAnimation = (type) => {
-    setActiveAction(type);
-    // Reset after animation duration
-    setTimeout(() => setActiveAction(null), 2000);
+  const selectPet = (pet) => {
+    setCurrentPet(pet);
+    setView('game');
   };
 
   if (loading) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-gradient)' }}>
-      <motion.div 
-        animate={{ 
-          rotate: 360,
-          scale: [1, 1.2, 1],
-        }}
-        transition={{ repeat: Infinity, duration: 2 }}
-      >
-        <Sparkles size={60} color="#6c5ce7" />
-      </motion.div>
+      <span className="loader"></span>
     </div>
   );
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: '120px', maxWidth: '500px', margin: '0 auto', position: 'relative' }}>
-      {/* Background Decor */}
-      <div className="ambient-orb orb-1" />
-      <div className="ambient-orb orb-2" />
-
-      {/* Header */}
-      <header style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 10 }}>
-        <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
-          <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '800', background: 'linear-gradient(45deg, #6c5ce7, #fd79a8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Livi
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00b894' }} />
-             <small style={{ opacity: 0.6, fontWeight: 500 }}>{user?.firstName}</small>
-          </div>
-        </motion.div>
-        {user?.telegramId && (
-          <motion.div 
-            initial={{ x: 20, opacity: 0 }} 
-            animate={{ x: 0, opacity: 1 }}
-            className="glass-panel" 
-            style={{ padding: '8px 12px', fontSize: '11px', fontWeight: 'bold', letterSpacing: '0.5px' }}
-          >
-            #{user.telegramId}
-          </motion.div>
-        )}
-      </header>
-
-      {!pet ? (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }} 
-          animate={{ opacity: 1, scale: 1 }}
-          style={{ padding: '20px' }}
-        >
-          <div className="glass-panel" style={{ padding: '40px 20px', textAlign: 'center', marginBottom: '30px', border: '2px solid rgba(255,255,255,0.3)' }}>
-            <div style={{ height: '250px', marginBottom: '20px' }}>
-                <ModelViewer type="egg" />
+    <div style={{ minHeight: '100vh', maxWidth: '500px', margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
+      
+      {/* LOBBY VIEW */}
+      {view === 'lobby' && (
+        <div style={{ padding: '30px 20px' }}>
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: '32px', fontWeight: '900', letterSpacing: '-1px' }}>My Pets</h1>
+              <p style={{ margin: 0, opacity: 0.5 }}>Select a companion</p>
             </div>
-            <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>Begin Your Story</h2>
-            <p style={{ opacity: 0.7, lineHeight: '1.6', marginBottom: '30px' }}>Your digital companion is waiting to hatch. Choose your path and start growing together.</p>
-            
-            <motion.button 
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleCreateSolo} 
-              style={{ 
-                width: '100%', padding: '18px',
-                background: 'linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)', 
-                color: 'white', borderRadius: '20px', fontWeight: 'bold', fontSize: '18px',
-                boxShadow: '0 10px 20px rgba(108, 92, 231, 0.3)',
-                border: '1px solid rgba(255,255,255,0.2)'
-              }}
+            <div className="hud-capsule">
+              <span style={{ fontSize: '14px', fontWeight: 800 }}>{pets.length}/10</span>
+            </div>
+          </header>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            {/* New Pet Card */}
+            <motion.div 
+              whileTap={{ scale: 0.95 }}
+              className="glass-panel"
+              style={{ height: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)' }}
             >
-              Hatch Solo
-            </motion.button>
-          </div>
-
-          <div style={{ position: 'relative', textAlign: 'center', margin: '30px 0' }}>
-            <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: 'rgba(0,0,0,0.1)', zIndex: 0 }} />
-            <span style={{ position: 'relative', background: 'var(--bg-gradient)', padding: '0 15px', fontSize: '14px', fontWeight: 600, opacity: 0.5, zIndex: 1 }}>COOPERATIVE PLAY</span>
-          </div>
-
-          <div className="glass-panel" style={{ padding: '25px' }}>
-            <h3 style={{ margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px' }}>
-              <Users size={20} className="text-primary" /> Joint Adoption
-            </h3>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <input 
-                type="text" 
-                placeholder="Enter Partner's ID" 
-                value={pairIdInput}
-                onChange={(e) => setPairIdInput(e.target.value)}
-                style={{ 
-                  flex: 1, padding: '15px', borderRadius: '15px', 
-                  border: '2px solid rgba(0,0,0,0.05)', outline: 'none',
-                  background: 'rgba(255,255,255,0.8)', fontSize: '16px'
-                }}
-              />
-              <motion.button 
-                whileTap={{ scale: 0.95 }}
-                onClick={handleJoin}
-                style={{ 
-                  padding: '0 25px', borderRadius: '15px',
-                  background: '#2d3436', color: 'white', fontWeight: '600'
-                }}
+              <div style={{ marginBottom: '15px' }}>
+                 <input 
+                   placeholder="Friend ID (Optional)" 
+                   value={partnerInput}
+                   onChange={e => setPartnerInput(e.target.value)}
+                   style={{ background: 'transparent', border: 'none', color: 'white', textAlign: 'center', width: '100%', outline: 'none', fontSize: '12px' }}
+                 />
+              </div>
+              <button 
+                onClick={() => handleCreatePet(!partnerInput)}
+                style={{ background: 'var(--primary)', color: 'white', padding: '10px 20px', borderRadius: '15px', fontWeight: 'bold' }}
               >
-                Join
-              </motion.button>
-            </div>
+                <Plus size={20} /> {partnerInput ? 'Co-op' : 'New Solo'}
+              </button>
+            </motion.div>
+
+            {/* Existing Pets */}
+            {pets.map(pet => (
+              <motion.div 
+                key={pet._id}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => selectPet(pet)}
+                className="glass-panel"
+                style={{ height: '180px', padding: '15px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02))' }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '12px', opacity: 0.7, textTransform: 'uppercase', fontWeight: 800 }}>Lvl {pet.level}</span>
+                  {pet.users && pet.users.length > 1 && <Users size={14} color="var(--secondary)" />}
+                </div>
+                <div style={{ textAlign: 'center', fontSize: '40px' }}>
+                  {/* Placeholder until we render a mini 3D model here */}
+                  👾
+                </div>
+                <div style={{ fontWeight: 800, textAlign: 'center' }}>{pet.name}</div>
+              </motion.div>
+            ))}
           </div>
-        </motion.div>
-      ) : (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <Pet pet={pet} activeAction={activeAction} />
-          <Actions onUpdate={setPet} onActionTrigger={triggerActionAnimation} />
-        </motion.div>
+        </div>
+      )}
+
+      {/* GAME VIEW */}
+      {view === 'game' && currentPet && (
+        <Suspense fallback={<div className="loader" style={{ position: 'absolute', top: '50%', left: '50%' }} />}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+             <button 
+                onClick={() => setView('lobby')}
+                style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100, background: 'rgba(0,0,0,0.5)', color: 'white', padding: '10px', borderRadius: '15px' }}
+             >
+               Back
+             </button>
+             <Pet pet={currentPet} onUpdate={setCurrentPet} />
+             <Actions pet={currentPet} onUpdate={setCurrentPet} />
+          </motion.div>
+        </Suspense>
       )}
     </div>
   );

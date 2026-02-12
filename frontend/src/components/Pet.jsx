@@ -5,8 +5,7 @@ import ModelViewer from './ModelViewer';
 
 const Pet = ({ pet, activeAction }) => {
   const [floatingTexts, setFloatingTexts] = useState([]);
-  const [clickCount, setClickCount] = useState(0);
-
+  
   // Add floating text
   const addFloatingText = (text, color, icon) => {
     const id = Date.now() + Math.random();
@@ -35,10 +34,7 @@ const Pet = ({ pet, activeAction }) => {
   };
 
   const handlePetClick = (e) => {
-      // Prevent double trigger on mobile tap
       e.stopPropagation();
-      setClickCount(prev => prev + 1);
-      
       if (window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
       }
@@ -54,9 +50,9 @@ const Pet = ({ pet, activeAction }) => {
         className="glass-panel"
         style={{ 
           width: '50px', height: '140px', borderRadius: '25px', 
-          background: 'rgba(255,255,255,0.4)', padding: '6px',
+          background: 'rgba(255,255,255,0.05)', padding: '6px',
           display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-          boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.05)', border: '1px solid rgba(255,255,255,0.3)',
+          boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)',
           position: 'relative', overflow: 'hidden'
         }}
       >
@@ -71,7 +67,7 @@ const Pet = ({ pet, activeAction }) => {
           }}
         />
         <div style={{ position: 'absolute', top: '10px', left: 0, right: 0, textAlign: 'center' }}>
-            <Icon size={20} color={value > 50 ? (value > 80 ? color : '#7f8c8d') : '#7f8c8d'} style={{ opacity: 0.8 }} />
+            <Icon size={20} color={value > 50 ? '#fff' : '#ffffff88'} style={{ opacity: 0.9 }} />
         </div>
       </div>
       <span style={{ fontSize: '12px', fontWeight: '800', opacity: 0.6 }}>{Math.round(value)}%</span>
@@ -98,7 +94,7 @@ const Pet = ({ pet, activeAction }) => {
                         color: item.color,
                         fontWeight: '900',
                         fontSize: '32px',
-                        textShadow: '0 4px 0 #fff, 0 0 20px rgba(0,0,0,0.1)',
+                        textShadow: '0 4px 0 #000, 0 0 20px rgba(0,0,0,0.5)',
                         display: 'flex', alignItems: 'center', gap: '8px',
                         zIndex: 100
                     }}
@@ -125,7 +121,7 @@ const Pet = ({ pet, activeAction }) => {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
             <span style={{ fontSize: '10px', fontWeight: 800, opacity: 0.5, textTransform: 'uppercase' }}>Level</span>
-            <span style={{ fontSize: '18px', fontWeight: 900, color: '#2d3436' }}>{pet.level}</span>
+            <span style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>{pet.level}</span>
           </div>
         </motion.div>
 
@@ -135,10 +131,8 @@ const Pet = ({ pet, activeAction }) => {
           className="hud-capsule"
           style={{ paddingRight: '16px' }}
         >
-           <div style={{ width: '32px', height: '32px', marginRight: '-5px' }}>
-             <ModelViewer type="coin" style={{ height: '100%', minHeight: 'auto' }} />
-           </div>
-           <span style={{ fontSize: '18px', fontWeight: 900, color: '#2d3436' }}>{pet.coins}</span>
+           <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'gold', border: '2px solid orange', marginRight: '5px' }} />
+           <span style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>{pet.petCoins}</span>
         </motion.div>
       </div>
 
@@ -151,20 +145,11 @@ const Pet = ({ pet, activeAction }) => {
           type="pet" 
           mood={getMood()} 
           color={pet.skinColor || '#FFD700'} 
+          accessories={pet.accessories}
           activeAction={activeAction}
           onPetClick={handlePetClick}
           style={{ height: '100%' }}
         />
-        
-        {/* Clothing Overlay (if any, positioned absolutely over the canvas area) */}
-        {pet.clothingUrl && (
-          <div style={{ 
-            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', 
-            width: '250px', height: '250px', pointerEvents: 'none', zIndex: 5 
-          }}>
-            <img src={`https://livi-backend.onrender.com${pet.clothingUrl}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-        )}
       </div>
 
       {/* Right Side Stats Pills */}
@@ -173,8 +158,8 @@ const Pet = ({ pet, activeAction }) => {
         display: 'flex', flexDirection: 'column', gap: '20px', zIndex: 10
       }}>
         <StatPill icon={Coffee} value={pet.hunger} color="#ff7675" />
-        <StatPill icon={Zap} value={pet.energy} color="#74b9ff" />
-        <StatPill icon={Heart} value={pet.mood} color="#fd79a8" />
+        <StatPill icon={Zap} value={pet.energy} color="#00d2ff" />
+        <StatPill icon={Heart} value={pet.mood} color="#ff007a" />
       </div>
 
     </div>
