@@ -3,6 +3,7 @@ import WebApp from '@twa-dev/sdk';
 import { login, createPet } from './api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Plus, Trophy, Sparkles } from 'lucide-react';
+import ModelViewer from './components/ModelViewer'; // Added missing import
 
 // Lazy Load Heavy Components
 const Pet = React.lazy(() => import('./components/Pet'));
