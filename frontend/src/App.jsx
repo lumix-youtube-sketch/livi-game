@@ -13,8 +13,9 @@ function App() {
   const [pets, setPets] = useState([]);
   const [currentPet, setCurrentPet] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState('loading'); // loading | lobby | game
+  const [view, setView] = useState('loading'); 
   const [partnerInput, setPartnerInput] = useState('');
+  const [activeAction, setActiveAction] = useState(null);
 
   useEffect(() => {
     WebApp.ready();
@@ -27,7 +28,6 @@ function App() {
         const res = await login();
         setUser(res.data.user);
         setPets(res.data.pets || []);
-        setView(res.data.pets.length > 0 ? 'lobby' : 'lobby'); // Always go to lobby first
       } catch (err) {
         console.error('Login failed', err);
       } finally {
@@ -36,6 +36,11 @@ function App() {
     };
     initAuth();
   }, []);
+
+  const handleActionTrigger = (type) => {
+    setActiveAction(type);
+    setTimeout(() => setActiveAction(null), 2000);
+  };
 
   const handleCreatePet = async (isSolo) => {
     try {
@@ -83,7 +88,7 @@ function App() {
             >
               <div style={{ marginBottom: '15px' }}>
                  <input 
-                   placeholder="Friend ID (Optional)" 
+                   placeholder="Friend ID" 
                    value={partnerInput}
                    onChange={e => setPartnerInput(e.target.value)}
                    style={{ background: 'transparent', border: 'none', color: 'white', textAlign: 'center', width: '100%', outline: 'none', fontSize: '12px' }}
@@ -91,9 +96,9 @@ function App() {
               </div>
               <button 
                 onClick={() => handleCreatePet(!partnerInput)}
-                style={{ background: 'var(--primary)', color: 'white', padding: '10px 20px', borderRadius: '15px', fontWeight: 'bold' }}
+                style={{ background: 'var(--primary)', color: 'white', padding: '10px 20px', borderRadius: '15px', fontWeight: 'bold', fontSize: '14px' }}
               >
-                <Plus size={20} /> {partnerInput ? 'Co-op' : 'New Solo'}
+                <Plus size={16} /> {partnerInput ? 'Co-op' : 'Solo'}
               </button>
             </motion.div>
 
@@ -110,9 +115,10 @@ function App() {
                   <span style={{ fontSize: '12px', opacity: 0.7, textTransform: 'uppercase', fontWeight: 800 }}>Lvl {pet.level}</span>
                   {pet.users && pet.users.length > 1 && <Users size={14} color="var(--secondary)" />}
                 </div>
-                <div style={{ textAlign: 'center', fontSize: '40px' }}>
-                  {/* Placeholder until we render a mini 3D model here */}
-                  👾
+                <div style={{ height: '80px' }}>
+                   <Suspense fallback={null}>
+                      <ModelViewer type="pet" mood="happy" color={pet.skinColor} accessories={pet.accessories} style={{ height: '100%' }} />
+                   </Suspense>
                 </div>
                 <div style={{ fontWeight: 800, textAlign: 'center' }}>{pet.name}</div>
               </motion.div>
@@ -127,12 +133,12 @@ function App() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
              <button 
                 onClick={() => setView('lobby')}
-                style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100, background: 'rgba(0,0,0,0.5)', color: 'white', padding: '10px', borderRadius: '15px' }}
+                style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100, background: 'rgba(0,0,0,0.5)', color: 'white', padding: '10px', borderRadius: '15px', fontSize: '12px', fontWeight: 800 }}
              >
                Back
              </button>
-             <Pet pet={currentPet} onUpdate={setCurrentPet} />
-             <Actions pet={currentPet} onUpdate={setCurrentPet} />
+             <Pet pet={currentPet} activeAction={activeAction} />
+             <Actions pet={currentPet} onUpdate={setCurrentPet} onActionTrigger={handleActionTrigger} />
           </motion.div>
         </Suspense>
       )}

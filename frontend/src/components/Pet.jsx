@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Zap, Coffee, Star, Trophy, Sparkles } from 'lucide-react';
+import { Heart, Zap, Coffee, Star, Trophy } from 'lucide-react';
 import ModelViewer from './ModelViewer';
 
 const Pet = ({ pet, activeAction }) => {
   const [floatingTexts, setFloatingTexts] = useState([]);
   
-  // Add floating text
   const addFloatingText = (text, color, icon) => {
     const id = Date.now() + Math.random();
     setFloatingTexts(prev => [...prev, { id, text, color, icon, x: Math.random() * 40 - 20, y: 0 }]);
@@ -15,7 +14,6 @@ const Pet = ({ pet, activeAction }) => {
     }, 1500);
   };
 
-  // React to actions from parent
   useEffect(() => {
     if (activeAction) {
         if (activeAction === 'feed') addFloatingText('+15', '#ff7675', Coffee);
@@ -26,7 +24,6 @@ const Pet = ({ pet, activeAction }) => {
 
   if (!pet) return null;
 
-  // Map backend stats to 3D mood
   const getMood = () => {
     if (pet.energy < 30) return 'sleepy';
     if (pet.mood < 30 || pet.hunger < 30) return 'sad';
@@ -38,68 +35,56 @@ const Pet = ({ pet, activeAction }) => {
       if (window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
       }
-      addFloatingText('', '#fd79a8', Heart);
+      addFloatingText('', '#ff007a', Heart);
   };
 
   const StatPill = ({ icon: Icon, value, color, max = 100 }) => (
-    <div style={{ 
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
-      opacity: value < 30 ? 0.6 : 1, transition: 'opacity 0.3s'
-    }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
       <div 
         className="glass-panel"
         style={{ 
-          width: '50px', height: '140px', borderRadius: '25px', 
-          background: 'rgba(255,255,255,0.05)', padding: '6px',
+          width: '44px', height: '110px', borderRadius: '20px', 
+          background: 'rgba(255,255,255,0.03)', padding: '4px',
           display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-          boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)',
+          border: '1px solid rgba(255,255,255,0.1)',
           position: 'relative', overflow: 'hidden'
         }}
       >
         <motion.div 
-          initial={{ height: 0 }}
           animate={{ height: `${(value / max) * 100}%` }}
-          transition={{ type: 'spring', stiffness: 40, damping: 15 }}
           style={{ 
-            width: '100%', borderRadius: '20px', 
-            background: `linear-gradient(to top, ${color}, ${color}dd)`,
-            boxShadow: `0 0 15px ${color}66`
+            width: '100%', borderRadius: '16px', 
+            background: `linear-gradient(to top, ${color}, ${color}aa)`,
+            boxShadow: `0 0 10px ${color}44`
           }}
         />
-        <div style={{ position: 'absolute', top: '10px', left: 0, right: 0, textAlign: 'center' }}>
-            <Icon size={20} color={value > 50 ? '#fff' : '#ffffff88'} style={{ opacity: 0.9 }} />
+        <div style={{ position: 'absolute', top: '8px', left: 0, right: 0, textAlign: 'center' }}>
+            <Icon size={16} color="#fff" style={{ opacity: 0.8 }} />
         </div>
       </div>
-      <span style={{ fontSize: '12px', fontWeight: '800', opacity: 0.6 }}>{Math.round(value)}%</span>
+      <span style={{ fontSize: '10px', fontWeight: '900', opacity: 0.5 }}>{Math.round(value)}%</span>
     </div>
   );
 
   return (
-    <div style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden' }}>
       
-      {/* Floating Text Overlay */}
+      {/* Floating Text */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', zIndex: 50 }}>
           <AnimatePresence>
             {floatingTexts.map(item => (
                 <motion.div
                     key={item.id}
-                    initial={{ opacity: 0, y: 0, scale: 0.5, rotate: Math.random() * 20 - 10 }}
-                    animate={{ opacity: 1, y: -150, scale: 1.5 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 1, ease: "easeOut" }}
+                    initial={{ opacity: 0, y: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, y: -120, scale: 1.4 }}
+                    exit={{ opacity: 0 }}
                     style={{ 
-                        position: 'absolute', 
-                        left: `calc(50% + ${item.x}px)`, 
-                        top: '40%',
-                        color: item.color,
-                        fontWeight: '900',
-                        fontSize: '32px',
-                        textShadow: '0 4px 0 #000, 0 0 20px rgba(0,0,0,0.5)',
-                        display: 'flex', alignItems: 'center', gap: '8px',
-                        zIndex: 100
+                        position: 'absolute', left: `calc(50% + ${item.x}px)`, top: '45%',
+                        color: item.color, fontWeight: '900', fontSize: '28px',
+                        textShadow: '0 4px 0 #000', display: 'flex', alignItems: 'center', gap: '6px'
                     }}
                 >
-                    {item.icon && <item.icon size={32} fill={item.color} />}
+                    {item.icon && <item.icon size={28} fill={item.color} />}
                     {item.text}
                 </motion.div>
             ))}
@@ -107,44 +92,28 @@ const Pet = ({ pet, activeAction }) => {
       </div>
 
       {/* Top HUD */}
-      <div style={{ 
-        position: 'absolute', top: '10px', left: '20px', right: '20px', 
-        display: 'flex', justifyContent: 'space-between', zIndex: 10 
-      }}>
-        {/* Level */}
-        <motion.div 
-          initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
-          className="hud-capsule"
-        >
-          <div style={{ background: '#FFC312', borderRadius: '50%', padding: '6px', boxShadow: '0 2px 5px rgba(255, 195, 18, 0.4)' }}>
-            <Trophy size={16} color="white" strokeWidth={3} />
+      <div style={{ position: 'absolute', top: '15px', left: '15px', right: '15px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
+        <div className="hud-capsule" style={{ padding: '6px 12px' }}>
+          <div style={{ background: '#FFC312', borderRadius: '50%', padding: '5px' }}>
+            <Trophy size={14} color="white" strokeWidth={3} />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-            <span style={{ fontSize: '10px', fontWeight: 800, opacity: 0.5, textTransform: 'uppercase' }}>Level</span>
-            <span style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>{pet.level}</span>
-          </div>
-        </motion.div>
+          <span style={{ fontSize: '16px', fontWeight: 900 }}>LVL {pet.level}</span>
+        </div>
 
-        {/* Coins */}
-        <motion.div 
-          initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
-          className="hud-capsule"
-          style={{ paddingRight: '16px' }}
-        >
-           <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'gold', border: '2px solid orange', marginRight: '5px' }} />
-           <span style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>{pet.petCoins}</span>
-        </motion.div>
+        <div className="hud-capsule" style={{ padding: '6px 12px' }}>
+           <div style={{ width: '24px', height: '24px' }}>
+             <ModelViewer type="coin" style={{ height: '100%', minHeight: 'auto' }} />
+           </div>
+           <span style={{ fontSize: '16px', fontWeight: 900 }}>{pet.petCoins}</span>
+        </div>
       </div>
 
-      {/* Main 3D Stage */}
-      <div style={{ 
-        position: 'absolute', top: 0, left: 0, right: 0, height: '80%', 
-        zIndex: 1 
-      }}>
+      {/* 3D Stage */}
+      <div style={{ position: 'absolute', top: '10%', left: 0, right: 0, bottom: '20%', zIndex: 1 }}>
         <ModelViewer 
           type="pet" 
           mood={getMood()} 
-          color={pet.skinColor || '#FFD700'} 
+          color={pet.skinColor || '#8c52ff'} 
           accessories={pet.accessories}
           activeAction={activeAction}
           onPetClick={handlePetClick}
@@ -152,16 +121,15 @@ const Pet = ({ pet, activeAction }) => {
         />
       </div>
 
-      {/* Right Side Stats Pills */}
+      {/* Stats (Right Side) - Adjusted position to avoid overlap */}
       <div style={{ 
-        position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)',
-        display: 'flex', flexDirection: 'column', gap: '20px', zIndex: 10
+        position: 'absolute', right: '15px', top: '55%', transform: 'translateY(-50%)',
+        display: 'flex', flexDirection: 'column', gap: '15px', zIndex: 10
       }}>
         <StatPill icon={Coffee} value={pet.hunger} color="#ff7675" />
         <StatPill icon={Zap} value={pet.energy} color="#00d2ff" />
         <StatPill icon={Heart} value={pet.mood} color="#ff007a" />
       </div>
-
     </div>
   );
 };
