@@ -1,8 +1,12 @@
 import axios from 'axios';
 import WebApp from '@twa-dev/sdk';
 
-const API_URL = 'https://livi-backend.onrender.com/api'; 
-// For local dev: 'http://localhost:3000/api'
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = isLocal 
+  ? 'http://localhost:3000/api' 
+  : 'https://livi-backend.onrender.com/api'; 
+
+console.log('Using API URL:', API_URL);
 
 // Auth & Init
 export const login = async () => {

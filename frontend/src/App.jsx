@@ -24,17 +24,26 @@ function App() {
     WebApp.setHeaderColor('#0f0f14'); 
     WebApp.setBackgroundColor('#0f0f14');
 
+    // Safety timeout: if loading takes > 7s, force show lobby
+    const timer = setTimeout(() => {
+      setLoading(false);
+      if (view === 'loading') setView('lobby');
+    }, 7000);
+
     const initAuth = async () => {
+      console.log('Starting Auth...');
       try {
         const res = await login();
+        console.log('Auth Success:', res.data);
         setUser(res.data.user);
         setPets(res.data.pets || []);
-        setView('lobby'); // Switch to lobby after data is loaded
+        setView('lobby');
       } catch (err) {
-        console.error('Login failed', err);
-        setView('lobby'); // Still show lobby (to allow retry/new pet)
+        console.error('Login failed:', err);
+        setView('lobby');
       } finally {
         setLoading(false);
+        clearTimeout(timer);
       }
     };
     initAuth();
