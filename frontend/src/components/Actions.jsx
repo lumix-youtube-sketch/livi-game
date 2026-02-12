@@ -15,7 +15,7 @@ const Actions = ({ pet, onUpdate, onActionTrigger }) => {
 
   // User's best score
   const userId = WebApp.initDataUnsafe?.user?.id.toString();
-  const myBestScore = pet.highScores?.[userId] || 0;
+  const myBestScore = (pet.highScores && typeof pet.highScores === 'object') ? (pet.highScores[userId] || 0) : 0;
 
   useEffect(() => {
     if (showShop) getShop().then(res => setShopItems(res.data));
