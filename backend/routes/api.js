@@ -178,4 +178,26 @@ router.post('/pet/:id/equip', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// JOIN PET BY ID (Referral)
+router.post('/pet/join', async (req, res) => {
+  const { telegramId, petId } = req.body;
+  try {
+    const user = await User.findOne({ telegramId });
+    const pet = await Pet.findById(petId);
+    
+    if (!user || !pet) return res.status(404).json({ error: 'Not found' });
+    if (pet.users.includes(user._id)) return res.json({ pet }); // Already in
+    if (pet.users.length >= 2) return res.status(400).json({ error: 'Pet already has 2 owners' });
+
+    pet.partnerId = user._id;
+    pet.users.push(user._id);
+    await pet.save();
+
+    user.pets.push(pet._id);
+    await user.save();
+
+    res.json({ pet });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;

@@ -43,3 +43,11 @@ export const buyItem = (petId, itemId) => {
 export const equipItem = (petId, itemId, type) => {
   return axios.post(`${API_URL}/pet/${petId}/equip`, { itemId, type });
 };
+
+export const joinPet = (petId) => {
+  const user = WebApp.initDataUnsafe?.user || { id: '999' };
+  return axios.post(`${API_URL}/pet/join`, {
+    telegramId: user.id.toString(),
+    petId
+  });
+};
