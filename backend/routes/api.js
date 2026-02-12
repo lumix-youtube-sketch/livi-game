@@ -5,23 +5,29 @@ const Pet = require('../models/Pet');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 
-// Simple in-memory shop items (in production, use DB)
+// SHOP ITEMS
 const SHOP_ITEMS = [
+  // HEAD
   { id: 'cap_red', type: 'head', name: 'Red Cap', price: 150, icon: '🧢' },
   { id: 'crown_gold', type: 'head', name: 'Gold Crown', price: 500, icon: '👑' },
+  { id: 'ears_bunny', type: 'head', name: 'Bunny Ears', price: 200, icon: '🐰' },
+  // BODY
   { id: 'tshirt_blue', type: 'body', name: 'Blue Tee', price: 100, icon: '👕' },
   { id: 'hoodie_black', type: 'body', name: 'Ninja Hoodie', price: 300, icon: '🥷' },
+  // LEGS
   { id: 'jeans_classic', type: 'legs', name: 'Classic Jeans', price: 120, icon: '👖' },
-  { id: 'shorts_beach', type: 'legs', name: 'Beach Shorts', price: 80, icon: '🩳' }
+  // BACKGROUNDS
+  { id: 'bg_park', type: 'background', name: 'Sunny Park', price: 400, icon: '🌳' },
+  { id: 'bg_space', type: 'background', name: 'Deep Space', price: 800, icon: '🌌' },
+  { id: 'bg_room', type: 'background', name: 'Cozy Room', price: 300, icon: '🏠' }
 ];
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) { 
     const dir = 'uploads/';
-    if (!fs.existsSync(dir)){
-        fs.mkdirSync(dir);
-    }
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
     cb(null, dir);
   },
   filename: function (req, file, cb) { cb(null, Date.now() + '-' + file.originalname) }
@@ -34,29 +40,27 @@ const checkLevelUp = (pet) => {
   if (pet.xp >= xpNeeded) {
     pet.level += 1;
     pet.xp -= xpNeeded;
-    pet.petCoins += 100; // Reward
+    pet.petCoins += 100;
     return true;
   }
   return false;
 };
+
+// --- ROUTES ---
 
 // AUTH & INIT
 router.post('/auth', async (req, res) => {
   try {
     const { telegramId, username, firstName } = req.body;
     let user = await User.findOne({ telegramId }).populate('pets');
-    
     if (!user) {
       user = new User({ telegramId, username, firstName });
       await user.save();
     }
-    
-    // Decay all pets
     for (let pet of user.pets) {
       pet.decay();
       await pet.save();
     }
-    
     res.json({ user, pets: user.pets });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -67,86 +71,84 @@ router.post('/pet/create', async (req, res) => {
   try {
     const user = await User.findOne({ telegramId });
     if (!user) return res.status(404).json({ error: 'User not found' });
-    
     if (user.pets.length >= 10) return res.status(400).json({ error: 'Max 10 pets allowed' });
 
-    let petData = { 
-        ownerId: user._id, 
-        name: name || 'Livi', 
-        shape: shape || 'capsule',
-        users: [user._id] 
-    };
+    let petData = { ownerId: user._id, name: name || 'Livi', shape: shape || 'capsule', users: [user._id] };
     
-    // If Co-op
     if (partnerId) {
        const partner = await User.findOne({ telegramId: partnerId });
        if (partner) {
            petData.partnerId = partner._id;
            petData.users.push(partner._id);
-           // Logic to add pet to partner as well
            const pet = new Pet(petData);
            await pet.save();
-           
-           user.pets.push(pet._id);
-           await user.save();
-           
-           partner.pets.push(pet._id);
-           await partner.save();
+           user.pets.push(pet._id); await user.save();
+           partner.pets.push(pet._id); await partner.save();
            return res.json({ pet });
        }
     }
     
-    // Solo
     const pet = new Pet(petData);
     await pet.save();
     user.pets.push(pet._id);
     await user.save();
-    
     res.json({ pet });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// PET ACTIONS
+// JOIN PET
+router.post('/pet/join', async (req, res) => {
+  const { telegramId, petId } = req.body;
+  try {
+    const user = await User.findOne({ telegramId });
+    const pet = await Pet.findById(petId);
+    if (!user || !pet) return res.status(404).json({ error: 'Not found' });
+    if (pet.users.includes(user._id)) return res.json({ pet });
+    if (pet.users.length >= 2) return res.status(400).json({ error: 'Full' });
+
+    pet.partnerId = user._id;
+    pet.users.push(user._id);
+    await pet.save();
+    user.pets.push(pet._id);
+    await user.save();
+    res.json({ pet });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ACTIONS
 router.post('/pet/:id/action', async (req, res) => {
   const { type } = req.body; 
   const { id } = req.params;
-  
   try {
     const pet = await Pet.findById(id);
     if (!pet) return res.status(404).json({ error: 'Pet not found' });
     
     let leveledUp = false;
-
-    // Costs & Rewards
     if (type === 'feed') {
-      if (pet.petCoins < 10) return res.status(400).json({ error: 'Not enough coins' });
+      if (pet.petCoins < 10) return res.status(400).json({ error: 'No coins' });
       pet.petCoins -= 10;
       pet.hunger = Math.min(100, pet.hunger + 30);
       pet.mood = Math.min(100, pet.mood + 10);
       pet.xp += 15;
     } else if (type === 'play') {
-      if (pet.energy < 20) return res.status(400).json({ error: 'Too tired' });
+      if (pet.energy < 20) return res.status(400).json({ error: 'Tired' });
       pet.energy -= 20;
       pet.mood = Math.min(100, pet.mood + 25);
       pet.xp += 20;
-      pet.petCoins += 20; // Earn coins
+      pet.petCoins += 20;
     } else if (type === 'sleep') {
       pet.energy = Math.min(100, pet.energy + 60);
       pet.xp += 5;
     }
-
     leveledUp = checkLevelUp(pet);
     pet.lastInteraction = new Date();
     await pet.save();
-    
     res.json({ pet, leveledUp });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// SHOP
-router.get('/shop', (req, res) => {
-  res.json(SHOP_ITEMS);
-});
+// SHOP & BUY
+router.get('/shop', (req, res) => res.json(SHOP_ITEMS));
 
 router.post('/pet/:id/buy', async (req, res) => {
   const { itemId } = req.body;
@@ -154,53 +156,73 @@ router.post('/pet/:id/buy', async (req, res) => {
   try {
     const pet = await Pet.findById(id);
     const item = SHOP_ITEMS.find(i => i.id === itemId);
-    
-    if (!pet || !item) return res.status(404).json({ error: 'Not found' });
-    if (pet.petCoins < item.price) return res.status(400).json({ error: 'Not enough coins' });
-    if (pet.inventory.includes(itemId)) return res.status(400).json({ error: 'Already owned' });
+    if (!pet || !item) return res.status(404).json({ error: 'Error' });
+    if (pet.petCoins < item.price) return res.status(400).json({ error: 'No coins' });
+    if (pet.inventory.includes(itemId)) return res.status(400).json({ error: 'Owned' });
     
     pet.petCoins -= item.price;
     pet.inventory.push(itemId);
     await pet.save();
-    
     res.json({ pet, success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// EQUIP
+// EQUIP (Item or Background)
 router.post('/pet/:id/equip', async (req, res) => {
-  const { itemId, type } = req.body; // type: 'head', 'body', 'legs'
+  const { itemId, type } = req.body;
   const { id } = req.params;
   try {
     const pet = await Pet.findById(id);
     if (!pet) return res.status(404).json({ error: 'Pet not found' });
-    if (!pet.inventory.includes(itemId) && itemId !== null) return res.status(400).json({ error: 'Item not owned' });
     
-    pet.accessories[type] = itemId;
+    if (type === 'background') {
+        if (!pet.inventory.includes(itemId) && itemId !== 'bg_default') return res.status(400).json({ error: 'Not owned' });
+        pet.currentBackground = itemId;
+    } else {
+        if (!pet.inventory.includes(itemId) && itemId !== null) return res.status(400).json({ error: 'Not owned' });
+        pet.accessories[type] = itemId;
+    }
+    
     await pet.save();
-    
     res.json({ pet });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// JOIN PET BY ID (Referral)
-router.post('/pet/join', async (req, res) => {
-  const { telegramId, petId } = req.body;
+// UPLOAD TEXTURE
+router.post('/pet/:id/upload-texture', upload.single('image'), async (req, res) => {
+  const { type } = req.body; // 'head', 'body', 'legs'
+  const { id } = req.params;
+  if (!req.file) return res.status(400).json({ error: 'No file' });
+  
   try {
-    const user = await User.findOne({ telegramId });
-    const pet = await Pet.findById(petId);
+    const pet = await Pet.findById(id);
+    const filename = `tex-${Date.now()}.png`;
+    const outputPath = path.join('uploads', filename);
     
-    if (!user || !pet) return res.status(404).json({ error: 'Not found' });
-    if (pet.users.includes(user._id)) return res.json({ pet }); // Already in
-    if (pet.users.length >= 2) return res.status(400).json({ error: 'Pet already has 2 owners' });
+    // Convert to PNG and resize safely
+    await sharp(req.file.path).resize(512, 512).png().toFile(outputPath);
+    fs.unlinkSync(req.file.path); // remove temp
 
-    pet.partnerId = user._id;
-    pet.users.push(user._id);
+    pet.customTextures[type] = `/uploads/${filename}`;
     await pet.save();
+    res.json({ pet });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
 
-    user.pets.push(pet._id);
-    await user.save();
+// SUBMIT SCORE
+router.post('/pet/:id/score', async (req, res) => {
+  const { score, telegramId } = req.body;
+  const { id } = req.params;
+  try {
+    const pet = await Pet.findById(id);
+    const user = await User.findOne({ telegramId });
+    if (!pet || !user) return res.status(404).json({ error: 'Not found' });
 
+    const currentScore = pet.highScores.get(user._id.toString()) || 0;
+    if (score > currentScore) {
+        pet.highScores.set(user._id.toString(), score);
+        await pet.save();
+    }
     res.json({ pet });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });

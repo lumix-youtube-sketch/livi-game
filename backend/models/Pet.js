@@ -18,14 +18,26 @@ const petSchema = new mongoose.Schema({
   
   // Appearance & Accessories
   skinColor: { type: String, default: '#8c52ff' },
-  shape: { type: String, default: 'capsule' }, // 'capsule', 'round', 'boxy'
+  shape: { type: String, default: 'capsule' },
+  currentBackground: { type: String, default: 'bg_default' },
+  
   accessories: {
-    head: { type: String, default: null }, // 'cap', 'crown', etc.
-    body: { type: String, default: null }, // 'tshirt', 'hoodie'
-    legs: { type: String, default: null }  // 'jeans', 'shorts'
+    head: { type: String, default: null },
+    body: { type: String, default: null },
+    legs: { type: String, default: null }
   },
   
-  // Inventory specific to this pet (or shared if we want, but let's keep it per pet for progression)
+  // Custom Textures for Accessories (URL to uploaded image)
+  customTextures: {
+    head: { type: String, default: null },
+    body: { type: String, default: null },
+    legs: { type: String, default: null }
+  },
+
+  // Game Records: { userId: score }
+  highScores: { type: Map, of: Number, default: {} },
+  
+  // Inventory
   inventory: [{ type: String }], 
   
   lastInteraction: { type: Date, default: Date.now }

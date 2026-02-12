@@ -114,7 +114,10 @@ const Pet = ({ pet, activeAction }) => {
           type="pet" 
           mood={getMood()} 
           color={pet.skinColor || '#8c52ff'} 
+          shape={pet.shape}
           accessories={pet.accessories}
+          customTextures={pet.customTextures}
+          background={pet.currentBackground}
           activeAction={activeAction}
           onPetClick={handlePetClick}
           style={{ height: '100%' }}

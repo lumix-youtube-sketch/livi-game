@@ -29,6 +29,15 @@ export const createPet = (partnerId = null, name = 'Livi', shape = 'capsule') =>
   });
 };
 
+// Join Pet
+export const joinPet = (petId) => {
+  const user = WebApp.initDataUnsafe?.user || { id: '999' };
+  return axios.post(`${API_URL}/pet/join`, {
+    telegramId: user.id.toString(),
+    petId
+  });
+};
+
 // Actions
 export const performAction = (petId, type) => {
   return axios.post(`${API_URL}/pet/${petId}/action`, { type });
@@ -45,10 +54,20 @@ export const equipItem = (petId, itemId, type) => {
   return axios.post(`${API_URL}/pet/${petId}/equip`, { itemId, type });
 };
 
-export const joinPet = (petId) => {
+// Advanced Features
+export const uploadTexture = (petId, file, type) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('type', type);
+  return axios.post(`${API_URL}/pet/${petId}/upload-texture`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+};
+
+export const submitScore = (petId, score) => {
   const user = WebApp.initDataUnsafe?.user || { id: '999' };
-  return axios.post(`${API_URL}/pet/join`, {
-    telegramId: user.id.toString(),
-    petId
+  return axios.post(`${API_URL}/pet/${petId}/score`, { 
+      score, 
+      telegramId: user.id.toString() 
   });
 };
