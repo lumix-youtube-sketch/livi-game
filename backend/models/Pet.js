@@ -41,6 +41,9 @@ const petSchema = new mongoose.Schema({
   inventory: [{ type: String }], 
   
   lastInteraction: { type: Date, default: Date.now }
+}, {
+  toJSON: { flattenMaps: true },
+  toObject: { flattenMaps: true }
 });
 
 // Decay logic

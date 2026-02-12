@@ -4,18 +4,13 @@ import { Float, OrbitControls, ContactShadows, useCursor, PerspectiveCamera, Spa
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
 
-// --- SAFE ACCESSORY ---
+// --- ACCESSORIES ---
 const Accessory = ({ type, id, isPreview, textureUrl, shape }) => {
   if (!id && !textureUrl && !isPreview) return null;
-  
   let texture = null;
-  // Only try to load if URL is valid
   if (textureUrl && textureUrl.startsWith('/uploads')) {
-      try {
-          texture = useLoader(THREE.TextureLoader, `https://livi-backend.onrender.com${textureUrl}`);
-      } catch (e) { console.error("Texture load error", e); }
+      try { texture = useLoader(THREE.TextureLoader, `https://livi-backend.onrender.com${textureUrl}`); } catch (e) {}
   }
-
   const mat = texture ? <meshStandardMaterial map={texture} /> : <meshStandardMaterial color={id === 'tshirt_blue' ? '#3742fa' : '#2f3542'} />;
   const headY = shape === 'round' ? 0.5 : 0.7;
 
@@ -23,12 +18,12 @@ const Accessory = ({ type, id, isPreview, textureUrl, shape }) => {
     if (id === 'cap_red' || isPreview === 'cap_red') return (
       <group position={[0, isPreview?0:headY, 0.1]} rotation={[-0.1, 0, 0]}>
         <mesh><sphereGeometry args={[0.52, 32, 16, 0, Math.PI*2, 0, Math.PI/1.8]} /><meshStandardMaterial color="#ff4757" /></mesh>
-        <mesh position={[0, -0.05, 0.55]} rotation={[0.3, 0, 0]}><boxGeometry args={[0.65, 0.04, 0.5]} /><meshStandardMaterial color="#ff4757" /></mesh>
+        <mesh position={[0, -0.05, 0.55]} rotation={[0.2, 0, 0]}><boxGeometry args={[0.65, 0.04, 0.5]} /><meshStandardMaterial color="#ff4757" /></mesh>
       </group>
     );
     if (id === 'crown_gold' || isPreview === 'crown_gold') return (
         <group position={[0, isPreview?0:headY + 0.1, 0]} rotation={[0.1,0,0]}>
-             <mesh><cylinderGeometry args={[0.35, 0.25, 0.25, 8]} /><meshStandardMaterial color="#ffd700" metalness={0.6} roughness={0.3} /></mesh>
+             <mesh><cylinderGeometry args={[0.35, 0.25, 0.25, 8]} /><meshStandardMaterial color="#ffd700" metalness={0.8} roughness={0.2} /></mesh>
         </group>
     );
     if (id === 'ears_bunny' || isPreview === 'ears_bunny') return (
@@ -38,23 +33,8 @@ const Accessory = ({ type, id, isPreview, textureUrl, shape }) => {
         </group>
     );
   }
-
-  if (type === 'body') {
-     return (
-        <group position={[0, isPreview?0:-0.2, 0]}>
-            <mesh><cylinderGeometry args={[0.52, 0.52, 0.5, 32]} />{mat}</mesh>
-        </group>
-     );
-  }
-  
-  if (type === 'legs') {
-      return (
-        <group position={[0, isPreview?0:-0.65, 0]}>
-            <mesh position={[-0.22, 0, 0]}><capsuleGeometry args={[0.18, 0.3, 4, 8]} /><meshStandardMaterial color="#5352ed" /></mesh>
-            <mesh position={[0.22, 0, 0]}><capsuleGeometry args={[0.18, 0.3, 4, 8]} /><meshStandardMaterial color="#5352ed" /></mesh>
-        </group>
-     );
-  }
+  if (type === 'body') return <group position={[0, isPreview?0:-0.2, 0]}><mesh><cylinderGeometry args={[0.52, 0.52, 0.5, 32]} />{mat}</mesh></group>;
+  if (type === 'legs') return <group position={[0, isPreview?0:-0.65, 0]}><mesh position={[-0.22, 0, 0]}><capsuleGeometry args={[0.18, 0.3, 4, 8]} /><meshStandardMaterial color="#5352ed" /></mesh><mesh position={[0.22, 0, 0]}><capsuleGeometry args={[0.18, 0.3, 4, 8]} /><meshStandardMaterial color="#5352ed" /></mesh></group>;
   return null;
 };
 
@@ -68,12 +48,10 @@ const PetModel = ({ mood, color, shape, accessories, customTextures, onClick }) 
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
-    if (meshRef.current) {
-        meshRef.current.position.y = Math.sin(t * 3) * 0.05;
-    }
+    if (meshRef.current) meshRef.current.position.y = Math.sin(t * 3) * 0.05;
     if (faceRef.current) {
-        const x = (mouse.x * viewport.width) / 20;
-        const y = (mouse.y * viewport.height) / 20;
+        const x = (mouse.x * viewport.width) / 25;
+        const y = (mouse.y * viewport.height) / 25;
         faceRef.current.position.x = THREE.MathUtils.lerp(faceRef.current.position.x, x, 0.1);
         faceRef.current.position.y = THREE.MathUtils.lerp(faceRef.current.position.y, y + 0.15, 0.1);
     }
@@ -88,11 +66,9 @@ const PetModel = ({ mood, color, shape, accessories, customTextures, onClick }) 
              <capsuleGeometry args={[0.5, 0.8, 8, 16]} />}
             <meshStandardMaterial color={color || '#8c52ff'} roughness={0.4} />
           </mesh>
-
           <Accessory type="head" id={accessories?.head} shape={shape} textureUrl={customTextures?.head} />
           <Accessory type="body" id={accessories?.body} shape={shape} textureUrl={customTextures?.body} />
           <Accessory type="legs" id={accessories?.legs} shape={shape} textureUrl={customTextures?.legs} />
-
           <group ref={faceRef} position={[0, 0.15, 0.46]}>
               <mesh position={[-0.18, 0, 0]}><capsuleGeometry args={[0.06, 0.08, 4, 8]} /><meshStandardMaterial color="#111" roughness={0.1} /></mesh>
               <mesh position={[0.18, 0, 0]}><capsuleGeometry args={[0.06, 0.08, 4, 8]} /><meshStandardMaterial color="#111" roughness={0.1} /></mesh>
@@ -103,30 +79,31 @@ const PetModel = ({ mood, color, shape, accessories, customTextures, onClick }) 
   );
 };
 
-const ModelViewer = ({ type, itemId, mood, color, shape, accessories, customTextures, background, activeAction, onPetClick, style }) => {
+const ModelViewer = ({ type, itemId, color, shape, accessories, customTextures, background, activeAction, onPetClick, style }) => {
   return (
     <div style={{ width: '100%', height: '100%', minHeight: '150px', ...style }}>
       <Canvas shadows dpr={[1, 2]} gl={{ antialias: true }}>
-        <PerspectiveCamera makeDefault position={[0, 0, 4.5]} fov={35} />
-        <ambientLight intensity={0.9} />
+        <color attach="background" args={[background === 'bg_space' ? '#050505' : '#0f0f14']} />
+        <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={35} />
+        <ambientLight intensity={0.8} />
         <directionalLight position={[5, 8, 5]} intensity={1.2} castShadow />
         <pointLight position={[-5, 2, -5]} intensity={0.5} color="#a29bfe" />
         
         <Suspense fallback={null}>
-          <group position={[0, -0.3, 0]}>
-             {type === 'pet' && <PetModel mood={mood} color={color} shape={shape} accessories={accessories} customTextures={customTextures} onClick={onPetClick} />}
+          <group position={[0, -0.5, 0]}>
+             {type === 'pet' && <PetModel color={color} shape={shape} accessories={accessories} customTextures={customTextures} onClick={onPetClick} />}
              {type === 'preview' && itemId && (
                  <Float speed={3} rotationIntensity={1}>
-                    <Accessory type={itemId.split('_')[0] === 'bg' ? 'background' : itemId.split('_')[0]} id={itemId} isPreview={itemId} />
+                    <Accessory type={itemId.split('_')[0]} id={itemId} isPreview={itemId} shape="capsule" />
                  </Float>
              )}
              {type === 'coin' && <group rotation={[Math.PI/2, 0, 0]}><mesh castShadow><cylinderGeometry args={[0.5, 0.5, 0.1, 32]} /><meshStandardMaterial color="#ffd700" metalness={0.8} /></mesh></group>}
              <ContactShadows opacity={0.4} scale={10} blur={2.5} far={1.5} color="#000" />
           </group>
-          {background && background !== 'bg_default' && <Environment preset="city" background blur={0.8} />}
-          <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI/1.6} />
+          {background && background !== 'bg_default' && background !== 'bg_space' && <Environment preset="city" background blur={0.8} />}
+          {background === 'bg_space' && <Sparkles count={100} scale={10} size={2} color="white" />}
         </Suspense>
-        <EffectComposer disableNormalPass><Bloom intensity={0.2} luminanceThreshold={1} /><Vignette darkness={0.4} /></EffectComposer>
+        <EffectComposer disableNormalPass><Bloom intensity={0.2} luminanceThreshold={1} /><Vignette darkness={0.5} /></EffectComposer>
       </Canvas>
     </div>
   );
