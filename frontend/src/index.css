@@ -26,7 +26,7 @@ button:active { transform: scale(0.95); }
 
 .glass-panel {
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(25px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
@@ -38,31 +38,68 @@ button:active { transform: scale(0.95); }
 .loader-small { width: 20px; height: 20px; border: 2px solid #444; border-bottom-color: transparent; border-radius: 50%; animation: rot 1s linear infinite; }
 @keyframes rot { to { transform: rotate(360deg); } }
 
-/* Actions */
+/* Actions Dock */
 .icon-action {
-    background: none; display: flex; flex-direction: column; align-items: center; gap: 4px; color: white;
+    background: none; display: flex; flex-direction: column; align-items: center; gap: 4px; color: white; padding: 5px;
 }
 .icon-action span { font-size: 10px; font-weight: 800; opacity: 0.6; }
 
-/* Shop Refined */
-.shop-tabs { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-.shop-tabs button { padding: 8px 16px; border-radius: 10px; font-weight: 900; font-size: 11px; background: rgba(255,255,255,0.05); color: #888; white-space: nowrap; }
-.shop-tabs button.active { background: var(--primary); color: white; }
+/* Shop Modal */
+.shop-tabs { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+.shop-tabs::-webkit-scrollbar { display: none; }
+.shop-tabs button { padding: 10px 20px; border-radius: 12px; font-weight: 900; font-size: 12px; background: rgba(255,255,255,0.05); color: #888; white-space: nowrap; }
+.shop-tabs button.active { background: var(--primary); color: white; box-shadow: 0 0 15px var(--primary-glow); }
 
-.shop-grid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-right: 5px; }
-.shop-card { background: rgba(255,255,255,0.03); border-radius: 18px; padding: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; }
+.shop-grid { 
+    flex: 1; 
+    overflow-y: auto; 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    grid-auto-rows: min-content;
+    gap: 12px; 
+    padding-right: 5px;
+}
+
+.shop-card { 
+    background: rgba(255,255,255,0.03); 
+    border-radius: 20px; 
+    padding: 12px; 
+    text-align: center; 
+    border: 1px solid rgba(255,255,255,0.05); 
+    display: flex; 
+    flex-direction: column;
+    min-height: 180px;
+}
 .shop-card.equipped { border-color: var(--primary); background: rgba(140, 82, 255, 0.05); }
 
-.preview-container { height: 80px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
-.item-name { font-weight: 800; font-size: 12px; margin-bottom: 10px; }
+.preview-container { 
+    height: 100px; 
+    background: rgba(0,0,0,0.3); 
+    border-radius: 15px; 
+    margin-bottom: 10px; 
+    overflow: hidden; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-.equip-btn, .buy-btn { width: 100%; padding: 8px; border-radius: 8px; font-weight: 800; font-size: 11px; }
+.item-name { font-weight: 800; font-size: 13px; margin-bottom: 12px; color: white; }
+
+.equip-btn, .buy-btn { 
+    width: 100%; 
+    padding: 10px; 
+    border-radius: 10px; 
+    font-weight: 800; 
+    font-size: 12px;
+    margin-top: auto;
+}
 .equip-btn { background: rgba(255,255,255,0.1); color: white; }
+.equip-btn.active { background: var(--primary); }
 .buy-btn { background: white; color: black; }
 
-.upload-card { border: 2px dashed rgba(255,255,255,0.1); justify-content: center; align-items: center; gap: 10px; min-height: 140px; }
-.upload-label { background: var(--accent); color: white; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 900; }
+.upload-card { border: 2px dashed rgba(255,255,255,0.1); justify-content: center; align-items: center; gap: 10px; min-height: 180px; }
+.upload-label { background: var(--accent); color: white; padding: 8px 16px; border-radius: 10px; font-size: 11px; font-weight: 900; cursor: pointer; }
 
-.shop-footer { text-align: center; margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; font-weight: 900; font-size: 14px; }
+.shop-footer { text-align: center; margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 15px; font-weight: 900; font-size: 14px; }
 
 .hud-capsule { background: rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 6px 12px; display: flex; align-items: center; gap: 8px; }
