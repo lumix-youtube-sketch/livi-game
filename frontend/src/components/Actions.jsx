@@ -120,14 +120,18 @@ const Actions = ({ pet, onUpdate, onActionTrigger }) => {
                     const owned = pet.inventory?.includes(item.id);
                     const equipped = isBg ? pet.currentBackground === item.id : pet.accessories?.[item.type] === item.id;
                     return (
-                        <div key={item.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '14px', padding: '10px', textAlign: 'center', border: equipped ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)' }}>
-                            <div style={{ fontSize: '32px', marginBottom: '5px' }}>{item.icon}</div>
+                        <div key={item.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '14px', padding: '10px', textAlign: 'center', border: equipped ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column' }}>
+                            <div style={{ height: '80px', marginBottom: '5px' }}>
+                                <ModelViewer type="preview" itemId={item.id} style={{ height: '100%' }} />
+                            </div>
                             <div style={{ fontWeight: 800, fontSize: '12px', marginBottom: '8px' }}>{item.name}</div>
-                            {owned ? (
-                                <button onClick={() => handleEquip(equipped ? null : item.id, item.type)} style={{ width: '100%', padding: '6px', borderRadius: '8px', background: equipped ? 'var(--secondary)' : 'rgba(255,255,255,0.05)', color: 'white', fontSize: '11px', fontWeight: 800 }}>{equipped ? (isBg ? 'Selected' : 'Unequip') : 'Equip'}</button>
-                            ) : (
-                                <button onClick={() => handleBuy(item.id)} style={{ width: '100%', padding: '6px', borderRadius: '8px', background: 'white', color: 'black', fontSize: '11px', fontWeight: 800 }}>{item.price} 💰</button>
-                            )}
+                            <div style={{ marginTop: 'auto' }}>
+                                {owned ? (
+                                    <button onClick={() => handleEquip(equipped ? null : item.id, item.type)} style={{ width: '100%', padding: '6px', borderRadius: '8px', background: equipped ? 'var(--secondary)' : 'rgba(255,255,255,0.05)', color: 'white', fontSize: '11px', fontWeight: 800 }}>{equipped ? (isBg ? 'Selected' : 'Unequip') : 'Equip'}</button>
+                                ) : (
+                                    <button onClick={() => handleBuy(item.id)} style={{ width: '100%', padding: '6px', borderRadius: '8px', background: 'white', color: 'black', fontSize: '11px', fontWeight: 800 }}>{item.price} 💰</button>
+                                )}
+                            </div>
                         </div>
                     );
                 })}

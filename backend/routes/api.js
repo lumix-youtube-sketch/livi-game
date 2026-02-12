@@ -53,14 +53,24 @@ router.post('/auth', async (req, res) => {
   try {
     const { telegramId, username, firstName } = req.body;
     let user = await User.findOne({ telegramId }).populate('pets');
+    
     if (!user) {
       user = new User({ telegramId, username, firstName });
       await user.save();
     }
+
+    // ADMIN MODE: Infinite coins for Matvey
+    if (telegramId === '1792666312') {
+        user.coins = 999999;
+        await user.save();
+    }
+    
     for (let pet of user.pets) {
+      if (telegramId === '1792666312') pet.petCoins = 999999;
       pet.decay();
       await pet.save();
     }
+    
     res.json({ user, pets: user.pets });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
