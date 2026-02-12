@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { performAction, getShop, buyItem, equipItem, uploadTexture, submitScore } from '../api';
 import { Utensils, Gamepad2, Moon, ShoppingBag, X, Trophy, Upload, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import WebApp from '@twa-dev/sdk';
+import ModelViewer from './ModelViewer';
 
 const Actions = ({ pet, onUpdate, onActionTrigger }) => {
   const [showShop, setShowShop] = useState(false);
@@ -121,8 +122,10 @@ const Actions = ({ pet, onUpdate, onActionTrigger }) => {
                     const equipped = isBg ? pet.currentBackground === item.id : pet.accessories?.[item.type] === item.id;
                     return (
                         <div key={item.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '14px', padding: '10px', textAlign: 'center', border: equipped ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column' }}>
-                            <div style={{ height: '80px', marginBottom: '5px' }}>
-                                <ModelViewer type="preview" itemId={item.id} style={{ height: '100%' }} />
+                            <div style={{ height: '80px', marginBottom: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Suspense fallback={<div className="loader" style={{ width: '20px', height: '20px', borderWidth: '2px' }}></div>}>
+                                    <ModelViewer type="preview" itemId={item.id} style={{ height: '100%' }} />
+                                </Suspense>
                             </div>
                             <div style={{ fontWeight: 800, fontSize: '12px', marginBottom: '8px' }}>{item.name}</div>
                             <div style={{ marginTop: 'auto' }}>
