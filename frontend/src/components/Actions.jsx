@@ -1,6 +1,6 @@
-import React, { useState, useEffect, Suspense, useRef } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { performAction, getShop, buyItem, equipItem, uploadTexture, submitScore } from '../api';
-import { Utensils, Gamepad2, Moon, ShoppingBag, X, Trophy, Upload, Image as ImageIcon } from 'lucide-react';
+import { Utensils, Gamepad2, Moon, ShoppingBag, X, Upload, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import WebApp from '@twa-dev/sdk';
@@ -88,7 +88,7 @@ const Actions = ({ pet, onUpdate, onActionTrigger }) => {
 
       <AnimatePresence>
         {showShop && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(15px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }} onClick={() => setShowShop(false)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(15px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }} onClick={() => setShowShop(false)}>
             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="glass-panel shop-container" onClick={e => e.stopPropagation()}>
               <div className="shop-header">
                 <h3>Catalog</h3>
@@ -109,7 +109,7 @@ const Actions = ({ pet, onUpdate, onActionTrigger }) => {
                             <div key={item.id} className={`shop-card ${equipped ? 'equipped' : ''}`}>
                                 <div className="preview-container">
                                     <Suspense fallback={<div className="loader-small"></div>}>
-                                        <ModelViewer type="preview" itemId={item.id} style={{ height: '100%' }} />
+                                        <ModelViewer type="preview" itemId={item.id} style={{ height: '100%' }} isLobby={true} />
                                     </Suspense>
                                 </div>
                                 <div className="item-name">{item.name}</div>
