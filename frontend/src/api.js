@@ -19,12 +19,13 @@ export const login = async () => {
 };
 
 // Create Pet
-export const createPet = (partnerId = null, name = 'Livi') => {
+export const createPet = (partnerId = null, name = 'Livi', shape = 'capsule') => {
   const user = WebApp.initDataUnsafe?.user || { id: '999' };
   return axios.post(`${API_URL}/pet/create`, {
     telegramId: user.id.toString(),
     partnerId,
-    name
+    name,
+    shape
   });
 };
 

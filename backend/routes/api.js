@@ -61,16 +61,21 @@ router.post('/auth', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// CREATE PET (Solo or Co-op)
+// CREATE PET
 router.post('/pet/create', async (req, res) => {
-  const { telegramId, partnerId, name } = req.body;
+  const { telegramId, partnerId, name, shape } = req.body;
   try {
     const user = await User.findOne({ telegramId });
     if (!user) return res.status(404).json({ error: 'User not found' });
     
     if (user.pets.length >= 10) return res.status(400).json({ error: 'Max 10 pets allowed' });
 
-    let petData = { ownerId: user._id, name: name || 'Livi', users: [user._id] };
+    let petData = { 
+        ownerId: user._id, 
+        name: name || 'Livi', 
+        shape: shape || 'capsule',
+        users: [user._id] 
+    };
     
     // If Co-op
     if (partnerId) {

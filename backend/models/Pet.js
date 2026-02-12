@@ -17,7 +17,8 @@ const petSchema = new mongoose.Schema({
   petCoins: { type: Number, default: 100 }, // Coins earned by this specific pet
   
   // Appearance & Accessories
-  skinColor: { type: String, default: '#FFD700' },
+  skinColor: { type: String, default: '#8c52ff' },
+  shape: { type: String, default: 'capsule' }, // 'capsule', 'round', 'boxy'
   accessories: {
     head: { type: String, default: null }, // 'cap', 'crown', etc.
     body: { type: String, default: null }, // 'tshirt', 'hoodie'
