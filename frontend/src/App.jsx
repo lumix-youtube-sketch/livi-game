@@ -87,11 +87,20 @@ function App() {
               <Plus size={40} color="var(--primary)" /><span style={{ marginTop: '10px', fontWeight: 800 }}>New Pet</span>
             </motion.div>
             {pets.map(pet => (
-              <motion.div key={pet._id} whileTap={{ scale: 0.95 }} onClick={() => { setCurrentPet(pet); setView('game'); }} className="glass-panel" style={{ height: '220px', padding: '15px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div style={{ height: '120px' }}>
-                   <ModelViewer type="pet" mood="happy" color={pet.skinColor} shape={pet.shape} accessories={pet.accessories} style={{ height: '100%' }} />
+              <motion.div key={pet._id} whileTap={{ scale: 0.95 }} onClick={() => { setCurrentPet(pet); setView('game'); }} className="glass-panel" style={{ height: '220px', padding: '15px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', overflow: 'hidden' }}>
+                <div style={{ height: '120px', margin: '-15px -15px 0 -15px' }}>
+                   <ModelViewer 
+                      type="pet" 
+                      mood="happy" 
+                      color={pet.skinColor} 
+                      shape={pet.shape} 
+                      accessories={pet.accessories} 
+                      background={pet.currentBackground}
+                      isLobby={true}
+                      style={{ height: '100%' }} 
+                   />
                 </div>
-                <div style={{ fontWeight: 900, textAlign: 'center' }}>{pet.name}</div>
+                <div style={{ fontWeight: 900, textAlign: 'center', color: 'white' }}>{pet.name}</div>
               </motion.div>
             ))}
           </div>
