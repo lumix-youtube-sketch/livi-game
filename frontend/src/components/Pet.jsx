@@ -43,7 +43,7 @@ const Pet = ({ pet, activeAction }) => {
       <div 
         className="glass-panel"
         style={{ 
-          width: '44px', height: '110px', borderRadius: '20px', 
+          width: '40px', height: '100px', borderRadius: '20px', 
           background: 'rgba(255,255,255,0.03)', padding: '4px',
           display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
           border: '1px solid rgba(255,255,255,0.1)',
@@ -58,11 +58,11 @@ const Pet = ({ pet, activeAction }) => {
             boxShadow: `0 0 10px ${color}44`
           }}
         />
-        <div style={{ position: 'absolute', top: '8px', left: 0, right: 0, textAlign: 'center' }}>
-            <Icon size={16} color="#fff" style={{ opacity: 0.8 }} />
+        <div style={{ position: 'absolute', top: '6px', left: 0, right: 0, textAlign: 'center' }}>
+            <Icon size={14} color="#fff" style={{ opacity: 0.8 }} />
         </div>
       </div>
-      <span style={{ fontSize: '10px', fontWeight: '900', opacity: 0.5 }}>{Math.round(value)}%</span>
+      <span style={{ fontSize: '9px', fontWeight: '900', opacity: 0.5 }}>{Math.round(value)}%</span>
     </div>
   );
 
@@ -91,8 +91,8 @@ const Pet = ({ pet, activeAction }) => {
           </AnimatePresence>
       </div>
 
-      {/* Top HUD */}
-      <div style={{ position: 'absolute', top: '15px', left: '15px', right: '15px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
+      {/* Top HUD - Adjusted to avoid top notches and back button */}
+      <div style={{ position: 'absolute', top: '70px', left: '15px', right: '15px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
         <div className="hud-capsule" style={{ padding: '6px 12px' }}>
           <div style={{ background: '#FFC312', borderRadius: '50%', padding: '5px' }}>
             <Trophy size={14} color="white" strokeWidth={3} />
@@ -109,7 +109,7 @@ const Pet = ({ pet, activeAction }) => {
       </div>
 
       {/* 3D Stage */}
-      <div style={{ position: 'absolute', top: '10%', left: 0, right: 0, bottom: '20%', zIndex: 1 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }}>
         <ModelViewer 
           type="pet" 
           mood={getMood()} 
@@ -121,9 +121,9 @@ const Pet = ({ pet, activeAction }) => {
         />
       </div>
 
-      {/* Stats (Right Side) - Adjusted position to avoid overlap */}
+      {/* Stats (Right Side) - Lowered and moved to avoid overlap with 3D model */}
       <div style={{ 
-        position: 'absolute', right: '15px', top: '55%', transform: 'translateY(-50%)',
+        position: 'absolute', right: '15px', bottom: '150px',
         display: 'flex', flexDirection: 'column', gap: '15px', zIndex: 10
       }}>
         <StatPill icon={Coffee} value={pet.hunger} color="#ff7675" />

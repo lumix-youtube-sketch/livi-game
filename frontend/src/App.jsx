@@ -28,8 +28,10 @@ function App() {
         const res = await login();
         setUser(res.data.user);
         setPets(res.data.pets || []);
+        setView('lobby'); // Switch to lobby after data is loaded
       } catch (err) {
         console.error('Login failed', err);
+        setView('lobby'); // Still show lobby (to allow retry/new pet)
       } finally {
         setLoading(false);
       }
