@@ -195,8 +195,8 @@ const Actions = ({ pet, onUpdate, onActionTrigger }) => {
               </div>
               <div className="shop-footer">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                      <span style={{ fontSize: '14px', opacity: 0.6 }}>YOUR BALANCE</span>
-                      <span style={{ fontSize: '24px', color: '#fdcb6e' }}>{pet.petCoins} 💰</span>
+                      <span style={{ fontSize: '12px', opacity: 0.4, fontWeight: 800, letterSpacing: '1px' }}>ACCOUNT_BALANCE</span>
+                      <span style={{ fontSize: '20px', color: 'white', fontFamily: 'Rajdhani', fontWeight: 700 }}>{pet.petCoins} CC</span>
                   </div>
               </div>
             </motion.div>

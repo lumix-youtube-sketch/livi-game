@@ -1,18 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
 
 :root {
-  --primary: #6c5ce7;
-  --primary-glow: rgba(108, 92, 231, 0.6);
-  --secondary: #00cec9;
-  --accent: #e056fd;
-  --danger: #ff7675;
-  --warning: #fdcb6e;
-  --success: #00b894;
+  --primary: #4834d4;
+  --primary-glow: rgba(72, 52, 212, 0.3);
+  --secondary: #dff9fb;
+  --accent: #686de0;
+  --danger: #eb4d4b;
+  --warning: #f9ca24;
+  --success: #6ab04c;
   
-  --bg-dark: #0f0f14;
-  --glass-bg: rgba(22, 22, 30, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.15);
+  --bg-dark: #0a0a0f;
+  --glass-bg: rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-highlight: rgba(255, 255, 255, 0.03);
   
   --font-main: 'Nunito', sans-serif;
   --font-tech: 'Rajdhani', sans-serif;

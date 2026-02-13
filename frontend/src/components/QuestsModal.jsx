@@ -25,7 +25,7 @@ const QuestsModal = ({ quests, onClaim, onClose }) => {
               ) : quest.claimed ? (
                 <div style={{ color: '#00d2ff', fontWeight: 900, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}><Check size={14} /> Done</div>
               ) : (
-                <div style={{ color: 'rgba(255,255,255,0.2)', fontWeight: 900, fontSize: '12px' }}>+{quest.reward} 🪙</div>
+                <div style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 900, fontSize: '11px', fontFamily: 'Rajdhani' }}>+ {quest.reward} COINS</div>
               )}
             </div>
           ))}

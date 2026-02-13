@@ -11,52 +11,59 @@ const Accessory = ({ type, id, isPreview, textureUrl, shape }) => {
   if (textureUrl && textureUrl.startsWith('/uploads')) {
       try { texture = useLoader(THREE.TextureLoader, `https://livi-backend.onrender.com${textureUrl}`); } catch (e) {}
   }
-  const mat = texture ? <meshStandardMaterial map={texture} /> : <meshToonMaterial color={id === 'tshirt_blue' ? '#3742fa' : '#2f3542'} />;
+  
+  const accProps = {
+    roughness: 0.2,
+    metalness: 0.5,
+    clearcoat: 1,
+  };
+
+  const mat = texture ? <meshPhysicalMaterial map={texture} {...accProps} /> : <meshPhysicalMaterial color={id === 'tshirt_blue' ? '#3742fa' : '#2f3542'} {...accProps} />;
   const headY = 0.65;
 
   if (type === 'head') {
     if (id === 'cap_red' || isPreview === 'cap_red') return (
       <group position={[0, isPreview?0:headY, 0.1]} rotation={[-0.1, 0, 0]}>
-        <mesh><sphereGeometry args={[0.55, 32, 16, 0, Math.PI*2, 0, Math.PI/1.8]} /><meshToonMaterial color="#ff4757" /></mesh>
-        <mesh position={[0, -0.05, 0.55]} rotation={[0.3, 0, 0]}><boxGeometry args={[0.65, 0.04, 0.5]} /><meshToonMaterial color="#ff4757" /></mesh>
+        <mesh><sphereGeometry args={[0.55, 32, 16, 0, Math.PI*2, 0, Math.PI/1.8]} /><meshPhysicalMaterial color="#ff4757" {...accProps} /></mesh>
+        <mesh position={[0, -0.05, 0.55]} rotation={[0.3, 0, 0]}><boxGeometry args={[0.65, 0.04, 0.5]} /><meshPhysicalMaterial color="#ff4757" {...accProps} /></mesh>
       </group>
     );
     if (id === 'crown_gold' || isPreview === 'crown_gold') return (
         <group position={[0, isPreview?0:headY + 0.1, 0]} rotation={[0.1,0,0]}>
-             <mesh><cylinderGeometry args={[0.35, 0.25, 0.25, 8]} /><meshStandardMaterial color="#ffd700" metalness={0.8} roughness={0.2} /></mesh>
+             <mesh><cylinderGeometry args={[0.35, 0.25, 0.25, 8]} /><meshPhysicalMaterial color="#ffd700" metalness={1} roughness={0.1} clearcoat={1} /></mesh>
         </group>
     );
     if (id === 'ears_bunny' || isPreview === 'ears_bunny') return (
         <group position={[0, isPreview?0:headY, 0]}>
-             <mesh position={[-0.3, 0.4, 0]} rotation={[0,0,-0.2]}><capsuleGeometry args={[0.1, 0.5]} /><meshToonMaterial color="#fff" /></mesh>
-             <mesh position={[0.3, 0.4, 0]} rotation={[0,0,0.2]}><capsuleGeometry args={[0.1, 0.5]} /><meshToonMaterial color="#fff" /></mesh>
+             <mesh position={[-0.3, 0.4, 0]} rotation={[0,0,-0.2]}><capsuleGeometry args={[0.1, 0.5]} /><meshPhysicalMaterial color="#fff" {...accProps} /></mesh>
+             <mesh position={[0.3, 0.4, 0]} rotation={[0,0,0.2]}><capsuleGeometry args={[0.1, 0.5]} /><meshPhysicalMaterial color="#fff" {...accProps} /></mesh>
         </group>
     );
     if (id === 'glasses_cool' || isPreview === 'glasses_cool') return (
         <group position={[0, isPreview?0:0.45, 0.55]}>
-            <mesh position={[-0.15, 0, 0]}><boxGeometry args={[0.25, 0.1, 0.05]} /><meshStandardMaterial color="black" roughness={0.2} /></mesh>
-            <mesh position={[0.15, 0, 0]}><boxGeometry args={[0.25, 0.1, 0.05]} /><meshStandardMaterial color="black" roughness={0.2} /></mesh>
-            <mesh position={[0, 0, -0.02]}><boxGeometry args={[0.05, 0.02, 0.02]} /><meshStandardMaterial color="black" /></mesh>
+            <mesh position={[-0.15, 0, 0]}><boxGeometry args={[0.25, 0.1, 0.05]} /><meshPhysicalMaterial color="#111" roughness={0.1} metalness={0.8} /></mesh>
+            <mesh position={[0.15, 0, 0]}><boxGeometry args={[0.25, 0.1, 0.05]} /><meshPhysicalMaterial color="#111" roughness={0.1} metalness={0.8} /></mesh>
+            <mesh position={[0, 0, -0.02]}><boxGeometry args={[0.05, 0.02, 0.02]} /><meshPhysicalMaterial color="#111" /></mesh>
         </group>
     );
     if (id === 'hat_wizard' || isPreview === 'hat_wizard') return (
         <group position={[0, isPreview?0:0.8, 0]} rotation={[-0.2, 0, 0]}>
-            <mesh position={[0, -0.1, 0]}><cylinderGeometry args={[0.6, 0.6, 0.05, 32]} /><meshStandardMaterial color="#4834d4" /></mesh>
-            <mesh position={[0, 0.4, 0]}><coneGeometry args={[0.35, 1, 32]} /><meshStandardMaterial color="#4834d4" /></mesh>
+            <mesh position={[0, -0.1, 0]}><cylinderGeometry args={[0.6, 0.6, 0.05, 32]} /><meshPhysicalMaterial color="#4834d4" metalness={0.5} roughness={0.3} /></mesh>
+            <mesh position={[0, 0.4, 0]}><coneGeometry args={[0.35, 1, 32]} /><meshPhysicalMaterial color="#4834d4" metalness={0.5} roughness={0.3} /></mesh>
         </group>
     );
   }
   if (type === 'body') {
       if (id === 'scarf_winter' || isPreview === 'scarf_winter') return (
           <group position={[0, isPreview?0:0.35, 0]} rotation={[0.2,0,0]}>
-              <mesh><torusGeometry args={[0.45, 0.15, 16, 32]} /><meshStandardMaterial color="#e056fd" /></mesh>
-              <mesh position={[0.3, -0.3, 0.4]} rotation={[0.5,0.5,0]}><boxGeometry args={[0.2, 0.6, 0.1]} /><meshStandardMaterial color="#e056fd" /></mesh>
+              <mesh><torusGeometry args={[0.45, 0.15, 16, 32]} /><meshPhysicalMaterial color="#e056fd" roughness={0.8} /></mesh>
+              <mesh position={[0.3, -0.3, 0.4]} rotation={[0.5,0.5,0]}><boxGeometry args={[0.2, 0.6, 0.1]} /><meshPhysicalMaterial color="#e056fd" roughness={0.8} /></mesh>
           </group>
       );
       if (id === 'suit_formal' || isPreview === 'suit_formal') return (
           <group position={[0, isPreview?0:0.1, 0.55]}>
-              <mesh position={[0, 0, 0]}><boxGeometry args={[0.2, 0.1, 0.05]} /><meshStandardMaterial color="black" /></mesh>
-              <mesh position={[0, 0, 0.02]}><sphereGeometry args={[0.03]} /><meshStandardMaterial color="red" /></mesh>
+              <mesh position={[0, 0, 0]}><boxGeometry args={[0.2, 0.1, 0.05]} /><meshPhysicalMaterial color="#111" roughness={0.2} /></mesh>
+              <mesh position={[0, 0, 0.02]}><sphereGeometry args={[0.03]} /><meshPhysicalMaterial color="#ff4757" roughness={0.5} /></mesh>
           </group>
       );
       return <group position={[0, isPreview?0:-0.15, 0]}><mesh><cylinderGeometry args={[0.55, 0.55, 0.55, 32]} />{mat}</mesh></group>;
@@ -64,11 +71,11 @@ const Accessory = ({ type, id, isPreview, textureUrl, shape }) => {
   if (type === 'legs') {
       if (id === 'shorts_beach' || isPreview === 'shorts_beach') return (
           <group position={[0, isPreview?0:-0.6, 0]}>
-            <mesh position={[-0.22, 0, 0]}><capsuleGeometry args={[0.22, 0.35]} /><meshToonMaterial color="#ff9f43" /></mesh>
-            <mesh position={[0.22, 0, 0]}><capsuleGeometry args={[0.22, 0.35]} /><meshToonMaterial color="#ff9f43" /></mesh>
+            <mesh position={[-0.22, 0, 0]}><capsuleGeometry args={[0.22, 0.35]} /><meshPhysicalMaterial color="#ff9f43" roughness={0.7} /></mesh>
+            <mesh position={[0.22, 0, 0]}><capsuleGeometry args={[0.22, 0.35]} /><meshPhysicalMaterial color="#ff9f43" roughness={0.7} /></mesh>
           </group>
       );
-      return <group position={[0, isPreview?0:-0.6, 0]}><mesh position={[-0.22, 0, 0]}><capsuleGeometry args={[0.2, 0.3]} /><meshToonMaterial color="#5352ed" /></mesh><mesh position={[0.22, 0, 0]}><capsuleGeometry args={[0.2, 0.3]} /><meshToonMaterial color="#5352ed" /></mesh></group>;
+      return <group position={[0, isPreview?0:-0.6, 0]}><mesh position={[-0.22, 0, 0]}><capsuleGeometry args={[0.2, 0.3]} /><meshPhysicalMaterial color="#2f3542" roughness={0.5} /></mesh><mesh position={[0.22, 0, 0]}><capsuleGeometry args={[0.2, 0.3]} /><meshPhysicalMaterial color="#2f3542" roughness={0.5} /></mesh></group>;
   }
   return null;
 };
@@ -88,48 +95,56 @@ const PetModel = ({ color, accessories, customTextures, onClick }) => {
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (meshRef.current) {
-        meshRef.current.position.y = Math.sin(t * 2.5) * 0.05;
-        // Squish & Stretch effect
-        const s = 1 + Math.sin(t * 5) * 0.02;
+        meshRef.current.position.y = Math.sin(t * 1.5) * 0.05;
+        const s = 1 + Math.sin(t * 3) * 0.01;
         meshRef.current.scale.set(1/s, s, 1/s);
     }
     if (faceRef.current) {
-        faceRef.current.position.x = THREE.MathUtils.lerp(faceRef.current.position.x, (mouse.x * viewport.width) / 25, 0.15);
-        faceRef.current.position.y = THREE.MathUtils.lerp(faceRef.current.position.y, (mouse.y * viewport.height) / 25 + 0.25, 0.15);
+        faceRef.current.position.x = THREE.MathUtils.lerp(faceRef.current.position.x, (mouse.x * viewport.width) / 30, 0.1);
+        faceRef.current.position.y = THREE.MathUtils.lerp(faceRef.current.position.y, (mouse.y * viewport.height) / 30 + 0.25, 0.1);
     }
   });
+
+  const materialProps = {
+    color: color || '#8c52ff',
+    roughness: 0.1,
+    metalness: 0.2,
+    clearcoat: 1,
+    clearcoatRoughness: 0.1,
+    transmission: 0.2, // Subtle glass effect
+    thickness: 0.5,
+  };
 
   return (
     <Select enabled>
         <group onClick={onClick}>
           <group ref={meshRef}>
-              {/* Organic Body */}
               <mesh castShadow receiveShadow>
                 <sphereGeometry args={[0.7, 64, 64]} />
-                <meshToonMaterial color={color || '#8c52ff'} />
+                <meshPhysicalMaterial {...materialProps} />
               </mesh>
               <mesh position={[0, -0.4, 0]} castShadow receiveShadow>
                 <sphereGeometry args={[0.75, 64, 64]} />
-                <meshToonMaterial color={color || '#8c52ff'} />
+                <meshPhysicalMaterial {...materialProps} />
               </mesh>
 
               <Accessory type="head" id={accessories?.head} textureUrl={customTextures?.head} />
               <Accessory type="body" id={accessories?.body} textureUrl={customTextures?.body} />
               <Accessory type="legs" id={accessories?.legs} textureUrl={customTextures?.legs} />
 
-              {/* Expression Face */}
+              {/* Expression Face - High Quality Eyes */}
               <group ref={faceRef} position={[0, 0.25, 0.55]}>
-                  <mesh position={[-0.2, 0, 0]} scale={[1, isBlinking ? 0.1 : 1, 1]}>
-                      <sphereGeometry args={[0.1, 32, 32]} />
-                      <meshStandardMaterial color="#111" roughness={0} />
-                      <mesh position={[0.03, 0.03, 0.08]}><sphereGeometry args={[0.03]} /><meshBasicMaterial color="#fff" /></mesh>
+                  <mesh position={[-0.2, 0, 0]} scale={[1, isBlinking ? 0.05 : 1, 1]}>
+                      <sphereGeometry args={[0.12, 32, 32]} />
+                      <meshStandardMaterial color="#050505" roughness={0} />
+                      <mesh position={[0.04, 0.04, 0.08]}><sphereGeometry args={[0.035]} /><meshBasicMaterial color="#fff" /></mesh>
                   </mesh>
-                  <mesh position={[0.2, 0, 0]} scale={[1, isBlinking ? 0.1 : 1, 1]}>
-                      <sphereGeometry args={[0.1, 32, 32]} />
-                      <meshStandardMaterial color="#111" roughness={0} />
-                      <mesh position={[0.03, 0.03, 0.08]}><sphereGeometry args={[0.03]} /><meshBasicMaterial color="#fff" /></mesh>
+                  <mesh position={[0.2, 0, 0]} scale={[1, isBlinking ? 0.05 : 1, 1]}>
+                      <sphereGeometry args={[0.12, 32, 32]} />
+                      <meshStandardMaterial color="#050505" roughness={0} />
+                      <mesh position={[0.04, 0.04, 0.08]}><sphereGeometry args={[0.035]} /><meshBasicMaterial color="#fff" /></mesh>
                   </mesh>
-                  <mesh position={[0, -0.15, 0]} rotation={[0,0,Math.PI]}><torusGeometry args={[0.06, 0.02, 16, 32, Math.PI]} /><meshBasicMaterial color="#111" /></mesh>
+                  <mesh position={[0, -0.18, 0]} rotation={[0,0,Math.PI]}><torusGeometry args={[0.07, 0.015, 16, 32, Math.PI]} /><meshBasicMaterial color="#050505" /></mesh>
               </group>
           </group>
         </group>
@@ -170,9 +185,8 @@ const ModelViewer = ({ type, itemId, color, shape, accessories, customTextures, 
               <EnvironmentHelper id={background} />
               {!isLobby && (
                   <EffectComposer multisampling={8} autoClear={false}>
-                    <Outline selectionLayer={1} visibleEdgeColor={0x000000} edgeStrength={5} width={1024} />
-                    <Bloom intensity={0.3} luminanceThreshold={1} />
-                    <Vignette darkness={0.5} />
+                    <Bloom intensity={0.5} luminanceThreshold={1} mipmapBlur />
+                    <Vignette darkness={0.6} offset={0.1} />
                   </EffectComposer>
               )}
           </Selection>
