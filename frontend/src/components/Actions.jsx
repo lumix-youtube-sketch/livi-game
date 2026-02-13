@@ -6,6 +6,23 @@ import WebApp from '@twa-dev/sdk';
 import ModelViewer from './ModelViewer';
 
 const SpaceDodgeGame = React.lazy(() => import('./SpaceDodgeGame'));
+const LiviJumpGame = React.lazy(() => import('./LiviJumpGame'));
+
+const playSound = (freq = 400, type = 'sine', duration = 0.1) => {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+};
 
 const Actions = ({ pet, onUpdate, onActionTrigger }) => {
   const [showShop, setShowShop] = useState(false);
@@ -22,6 +39,7 @@ const Actions = ({ pet, onUpdate, onActionTrigger }) => {
 
   const handleAction = async (type) => {
       triggerHaptic('medium');
+      playSound(500, 'sine', 0.1);
       if (onActionTrigger) onActionTrigger(type);
       try {
           const res = await performAction(pet._id, type);
@@ -31,6 +49,7 @@ const Actions = ({ pet, onUpdate, onActionTrigger }) => {
 
   const handleBuyOrEquip = async (item) => {
       triggerHaptic('selection');
+      playSound(600, 'sine', 0.05);
       const owned = pet.inventory?.includes(item.id);
       const equipped = pet.accessories?.[item.type] === item.id;
       
@@ -42,6 +61,7 @@ const Actions = ({ pet, onUpdate, onActionTrigger }) => {
               const res = await buyItem(pet._id, item.id);
               onUpdate(res.data.pet);
               triggerHaptic('success');
+              playSound(800, 'triangle', 0.2);
           }
       } catch (e) { triggerHaptic('error'); }
   };
@@ -113,14 +133,23 @@ const Actions = ({ pet, onUpdate, onActionTrigger }) => {
         {showGameMenu && !activeGame && (
            <div className="modal-overlay" onClick={() => setShowGameMenu(false)}>
                <div className="glass-panel-ultra" style={{ padding: '25px', borderRadius: '24px', background: '#121212', width: '280px', display: 'grid', gap: '15px' }}>
-                   <button onClick={() => setActiveGame('dodge')} style={{ padding: '20px', borderRadius: '16px', background: 'linear-gradient(45deg, #ff7675, #fab1a0)', border: 'none', color: 'white', fontWeight: 900, fontSize: '16px' }}>🚀 SPACE DODGE</button>
-                   <button onClick={() => setActiveGame('clicker')} style={{ padding: '20px', borderRadius: '16px', background: 'linear-gradient(45deg, #a29bfe, #6c5ce7)', border: 'none', color: 'white', fontWeight: 900, fontSize: '16px' }}>⚡ FAST TAP</button>
+                   <button onClick={() => { setActiveGame('jump'); playSound(700); }} style={{ padding: '20px', borderRadius: '16px', background: 'linear-gradient(45deg, #a29bfe, #6c5ce7)', border: 'none', color: 'white', fontWeight: 900, fontSize: '16px' }}>🦖 LIVI JUMP</button>
+                   <button onClick={() => { setActiveGame('dodge'); playSound(700); }} style={{ padding: '20px', borderRadius: '16px', background: 'linear-gradient(45deg, #ff7675, #fab1a0)', border: 'none', color: 'white', fontWeight: 900, fontSize: '16px' }}>🚀 SPACE DODGE</button>
+                   <button onClick={() => { setActiveGame('clicker'); playSound(700); }} style={{ padding: '20px', borderRadius: '16px', background: 'linear-gradient(45deg, #fdcb6e, #f1c40f)', border: 'none', color: 'white', fontWeight: 900, fontSize: '16px' }}>⚡ FAST TAP</button>
                </div>
            </div>
         )}
       </AnimatePresence>
 
       <Suspense fallback={null}>
+        {activeGame === 'jump' && <LiviJumpGame onEnd={async (score) => {
+            if (score > 0) {
+                const res = await submitScore(pet._id, Math.floor(score/2)); // Balance: jump points are easier
+                onUpdate(res.data.pet);
+            }
+            setActiveGame(null);
+            playSound(300, 'sawtooth', 0.2);
+        }} />}
         {activeGame === 'dodge' && <SpaceDodgeGame onEnd={async (score) => {
             if (score > 0) {
                 const res = await submitScore(pet._id, score);

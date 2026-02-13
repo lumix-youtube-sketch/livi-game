@@ -5,6 +5,22 @@ import ModelViewer from './ModelViewer';
 import { claimQuest } from '../api';
 import QuestsModal from './QuestsModal';
 
+const playSound = (freq = 400, type = 'sine', duration = 0.1) => {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+};
+
 const Pet = ({ pet, activeAction, onUpdate, bgClass }) => {
   const [floatingTexts, setFloatingTexts] = useState([]);
   const [showQuests, setShowQuests] = useState(false);
@@ -37,7 +53,7 @@ const Pet = ({ pet, activeAction, onUpdate, bgClass }) => {
             </div>
         </div>
         
-        <button onClick={() => setShowQuests(true)} style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <button onClick={() => { playSound(600); setShowQuests(true); }} style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
             <ClipboardList size={20} color="white" />
             {pet.dailyQuests?.some(q => q.completed && !q.claimed) && <div style={{ width: '8px', height: '8px', background: '#ff7675', borderRadius: '50%', position: 'absolute', top: '8px', right: '8px' }} />}
         </button>

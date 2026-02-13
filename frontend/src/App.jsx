@@ -11,6 +11,22 @@ const Actions = React.lazy(() => import('./components/Actions'));
 
 const BG_CLASSES = ['bg-cyber-neon', 'bg-zen-garden', 'bg-abyssal-depths', 'bg-celestial-void', 'bg-sunset-mirage'];
 
+const playSound = (freq = 400, type = 'sine', duration = 0.1) => {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+};
+
 function App() {
   const [user, setUser] = useState(null);
   const [pets, setPets] = useState([]);
@@ -46,7 +62,11 @@ function App() {
                   <motion.div 
                     key={pet._id} 
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => { setCurrentPet(pet); setView('game'); }}
+                    onClick={() => { 
+                        playSound(500 + (idx * 50));
+                        setCurrentPet(pet); 
+                        setView('game'); 
+                    }}
                     className={BG_CLASSES[idx % BG_CLASSES.length]}
                     style={{ scrollSnapAlign: 'center', minWidth: '280px', height: '420px', borderRadius: '40px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}
                   >
