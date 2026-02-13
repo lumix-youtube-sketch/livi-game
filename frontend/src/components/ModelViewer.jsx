@@ -32,9 +32,44 @@ const Accessory = ({ type, id, isPreview, textureUrl, shape }) => {
              <mesh position={[0.3, 0.4, 0]} rotation={[0,0,0.2]}><capsuleGeometry args={[0.1, 0.5]} /><meshToonMaterial color="#fff" /></mesh>
         </group>
     );
+    if (id === 'glasses_cool' || isPreview === 'glasses_cool') return (
+        <group position={[0, isPreview?0:0.45, 0.55]}>
+            <mesh position={[-0.15, 0, 0]}><boxGeometry args={[0.25, 0.1, 0.05]} /><meshStandardMaterial color="black" roughness={0.2} /></mesh>
+            <mesh position={[0.15, 0, 0]}><boxGeometry args={[0.25, 0.1, 0.05]} /><meshStandardMaterial color="black" roughness={0.2} /></mesh>
+            <mesh position={[0, 0, -0.02]}><boxGeometry args={[0.05, 0.02, 0.02]} /><meshStandardMaterial color="black" /></mesh>
+        </group>
+    );
+    if (id === 'hat_wizard' || isPreview === 'hat_wizard') return (
+        <group position={[0, isPreview?0:0.8, 0]} rotation={[-0.2, 0, 0]}>
+            <mesh position={[0, -0.1, 0]}><cylinderGeometry args={[0.6, 0.6, 0.05, 32]} /><meshStandardMaterial color="#4834d4" /></mesh>
+            <mesh position={[0, 0.4, 0]}><coneGeometry args={[0.35, 1, 32]} /><meshStandardMaterial color="#4834d4" /></mesh>
+        </group>
+    );
   }
-  if (type === 'body') return <group position={[0, isPreview?0:-0.15, 0]}><mesh><cylinderGeometry args={[0.55, 0.55, 0.55, 32]} />{mat}</mesh></group>;
-  if (type === 'legs') return <group position={[0, isPreview?0:-0.6, 0]}><mesh position={[-0.22, 0, 0]}><capsuleGeometry args={[0.2, 0.3]} /><meshToonMaterial color="#5352ed" /></mesh><mesh position={[0.22, 0, 0]}><capsuleGeometry args={[0.2, 0.3]} /><meshToonMaterial color="#5352ed" /></mesh></group>;
+  if (type === 'body') {
+      if (id === 'scarf_winter' || isPreview === 'scarf_winter') return (
+          <group position={[0, isPreview?0:0.35, 0]} rotation={[0.2,0,0]}>
+              <mesh><torusGeometry args={[0.45, 0.15, 16, 32]} /><meshStandardMaterial color="#e056fd" /></mesh>
+              <mesh position={[0.3, -0.3, 0.4]} rotation={[0.5,0.5,0]}><boxGeometry args={[0.2, 0.6, 0.1]} /><meshStandardMaterial color="#e056fd" /></mesh>
+          </group>
+      );
+      if (id === 'suit_formal' || isPreview === 'suit_formal') return (
+          <group position={[0, isPreview?0:0.1, 0.55]}>
+              <mesh position={[0, 0, 0]}><boxGeometry args={[0.2, 0.1, 0.05]} /><meshStandardMaterial color="black" /></mesh>
+              <mesh position={[0, 0, 0.02]}><sphereGeometry args={[0.03]} /><meshStandardMaterial color="red" /></mesh>
+          </group>
+      );
+      return <group position={[0, isPreview?0:-0.15, 0]}><mesh><cylinderGeometry args={[0.55, 0.55, 0.55, 32]} />{mat}</mesh></group>;
+  }
+  if (type === 'legs') {
+      if (id === 'shorts_beach' || isPreview === 'shorts_beach') return (
+          <group position={[0, isPreview?0:-0.6, 0]}>
+            <mesh position={[-0.22, 0, 0]}><capsuleGeometry args={[0.22, 0.35]} /><meshToonMaterial color="#ff9f43" /></mesh>
+            <mesh position={[0.22, 0, 0]}><capsuleGeometry args={[0.22, 0.35]} /><meshToonMaterial color="#ff9f43" /></mesh>
+          </group>
+      );
+      return <group position={[0, isPreview?0:-0.6, 0]}><mesh position={[-0.22, 0, 0]}><capsuleGeometry args={[0.2, 0.3]} /><meshToonMaterial color="#5352ed" /></mesh><mesh position={[0.22, 0, 0]}><capsuleGeometry args={[0.2, 0.3]} /><meshToonMaterial color="#5352ed" /></mesh></group>;
+  }
   return null;
 };
 

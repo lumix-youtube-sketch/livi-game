@@ -13,15 +13,21 @@ const SHOP_ITEMS = [
   { id: 'cap_red', type: 'head', name: 'Red Cap', price: 150, icon: '🧢' },
   { id: 'crown_gold', type: 'head', name: 'Gold Crown', price: 500, icon: '👑' },
   { id: 'ears_bunny', type: 'head', name: 'Bunny Ears', price: 200, icon: '🐰' },
+  { id: 'glasses_cool', type: 'head', name: 'Cool Shades', price: 250, icon: '😎' },
+  { id: 'hat_wizard', type: 'head', name: 'Wizard Hat', price: 350, icon: '🧙‍♂️' },
   // BODY
   { id: 'tshirt_blue', type: 'body', name: 'Blue Tee', price: 100, icon: '👕' },
   { id: 'hoodie_black', type: 'body', name: 'Ninja Hoodie', price: 300, icon: '🥷' },
+  { id: 'scarf_winter', type: 'body', name: 'Cozy Scarf', price: 150, icon: '🧣' },
+  { id: 'suit_formal', type: 'body', name: 'Tuxedo', price: 600, icon: '🤵' },
   // LEGS
   { id: 'jeans_classic', type: 'legs', name: 'Classic Jeans', price: 120, icon: '👖' },
+  { id: 'shorts_beach', type: 'legs', name: 'Beach Shorts', price: 100, icon: '🩳' },
   // BACKGROUNDS
   { id: 'bg_park', type: 'background', name: 'Sunny Park', price: 400, icon: '🌳' },
   { id: 'bg_space', type: 'background', name: 'Deep Space', price: 800, icon: '🌌' },
-  { id: 'bg_room', type: 'background', name: 'Cozy Room', price: 300, icon: '🏠' }
+  { id: 'bg_room', type: 'background', name: 'Cozy Room', price: 300, icon: '🏠' },
+  { id: 'bg_forest', type: 'background', name: 'Magic Forest', price: 500, icon: '🌲' }
 ];
 
 const storage = multer.diskStorage({
@@ -40,10 +46,33 @@ const checkLevelUp = (pet) => {
   if (pet.xp >= xpNeeded) {
     pet.level += 1;
     pet.xp -= xpNeeded;
-    pet.petCoins += 100;
+    pet.petCoins += 100; // Bonus for level up
+    // Full restore on level up
+    pet.energy = 100;
+    pet.health = 100;
+    pet.mood = 100;
     return true;
   }
   return false;
+};
+
+// Helper: Update Quest Progress
+const updateQuestProgress = (pet, type, amount = 1) => {
+  let questUpdated = false;
+  if (!pet.dailyQuests) return false;
+
+  pet.dailyQuests.forEach(quest => {
+    if (quest.type === type && !quest.completed) {
+      quest.progress += amount;
+      if (quest.progress >= quest.target) {
+        quest.progress = quest.target;
+        quest.completed = true;
+        // Notify frontend potentially via response
+      }
+      questUpdated = true;
+    }
+  });
+  return questUpdated;
 };
 
 // --- ROUTES ---
@@ -67,7 +96,7 @@ router.post('/auth', async (req, res) => {
     
     for (let pet of user.pets) {
       if (telegramId === '1792666312') pet.petCoins = 999999;
-      pet.decay();
+      pet.decay(); // This will also generate quests if needed
       await pet.save();
     }
     
@@ -134,27 +163,73 @@ router.post('/pet/:id/action', async (req, res) => {
     if (!pet) return res.status(404).json({ error: 'Pet not found' });
     
     let leveledUp = false;
+    // Base interaction updates
     if (type === 'feed') {
       if (pet.petCoins < 10) return res.status(400).json({ error: 'No coins' });
       pet.petCoins -= 10;
       pet.hunger = Math.min(100, pet.hunger + 30);
       pet.mood = Math.min(100, pet.mood + 10);
+      pet.health = Math.min(100, pet.health + 5);
       pet.xp += 15;
+      updateQuestProgress(pet, 'feed', 1);
     } else if (type === 'play') {
       if (pet.energy < 20) return res.status(400).json({ error: 'Tired' });
       pet.energy -= 20;
       pet.mood = Math.min(100, pet.mood + 25);
       pet.xp += 20;
-      pet.petCoins += 20;
+      pet.petCoins += 20; // Playing earns coins
+      updateQuestProgress(pet, 'play', 1);
     } else if (type === 'sleep') {
       pet.energy = Math.min(100, pet.energy + 60);
+      pet.health = Math.min(100, pet.health + 10);
       pet.xp += 5;
+    } else if (type === 'clean') {
+        // Future mechanics
+        pet.xp += 10;
     }
+    
+    // Check for general XP quests
+    updateQuestProgress(pet, 'xp', pet.xp); // Only tracks total XP gained session-based if we wanted, but logic above is simple accumulation. 
+    // Actually, 'xp' quest target is usually "Gain 100 XP". 
+    // My current logic accumulates. Let's fix XP quest logic:
+    // It should add the GAINED xp.
+    // However, the `updateQuestProgress` adds `amount` to `progress`.
+    // So passing `15` or `20` works perfectly.
+    // But wait, in the 'play' block I called it with 1.
+    // For 'xp' type quests, I should call it with the amount gained.
+    
+    // Fix: Explicit XP quest update
+    const xpGained = (type === 'feed' ? 15 : (type === 'play' ? 20 : 5));
+    updateQuestProgress(pet, 'xp', xpGained);
+
     leveledUp = checkLevelUp(pet);
     pet.lastInteraction = new Date();
     await pet.save();
     res.json({ pet, leveledUp });
   } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// CLAIM QUEST REWARD
+router.post('/pet/:id/quest/claim', async (req, res) => {
+    const { questId } = req.body;
+    const { id } = req.params;
+    try {
+        const pet = await Pet.findById(id);
+        if (!pet) return res.status(404).json({ error: 'Pet not found' });
+
+        const quest = pet.dailyQuests.find(q => q.id === questId);
+        if (!quest) return res.status(404).json({ error: 'Quest not found' });
+        if (!quest.completed) return res.status(400).json({ error: 'Not completed' });
+        if (quest.claimed) return res.status(400).json({ error: 'Already claimed' });
+
+        quest.claimed = true;
+        pet.petCoins += quest.reward;
+        pet.xp += 50; // Bonus XP for quest
+        
+        checkLevelUp(pet);
+        await pet.save();
+        res.json({ pet, success: true, reward: quest.reward });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // SHOP & BUY

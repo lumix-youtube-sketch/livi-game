@@ -71,3 +71,7 @@ export const submitScore = (petId, score) => {
       telegramId: user.id.toString() 
   });
 };
+
+export const claimQuest = (petId, questId) => {
+    return axios.post(`${API_URL}/pet/${petId}/quest/claim`, { questId });
+};

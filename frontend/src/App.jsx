@@ -121,7 +121,7 @@ function App() {
         <div style={{ height: '100vh', position: 'relative' }}>
            <button onClick={() => setView('lobby')} style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 1000, background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: 'white', padding: '10px 20px', borderRadius: '20px', fontSize: '12px', fontWeight: 900 }}>Lobby</button>
            <Suspense fallback={<div className="loader-center"><div className="loader"></div></div>}>
-              <Pet pet={currentPet} activeAction={activeAction} />
+              <Pet pet={currentPet} activeAction={activeAction} onUpdate={setCurrentPet} />
            </Suspense>
            <Suspense fallback={null}>
               <Actions pet={currentPet} onUpdate={setCurrentPet} onActionTrigger={setActiveAction} />
