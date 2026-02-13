@@ -2,12 +2,20 @@ import React, { useEffect, useState, Suspense } from 'react';
 import WebApp from '@twa-dev/sdk';
 import { login, createPet, joinPet } from './api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, ArrowRight, User as UserIcon, Loader2 } from 'lucide-react';
+import { Plus, User as UserIcon, Loader2, ArrowRight, Clock } from 'lucide-react';
 import ModelViewer from './components/ModelViewer';
 import './App.css';
 
 const Pet = React.lazy(() => import('./components/Pet'));
 const Actions = React.lazy(() => import('./components/Actions'));
+
+const getAgeString = (date) => {
+    const diff = new Date() - new Date(date);
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    if (days > 0) return `${days}d ${hours}h`;
+    return `${hours}h`;
+};
 
 function App() {
   const [user, setUser] = useState(null);
@@ -20,22 +28,19 @@ function App() {
   const [newName, setNewName] = useState('Livi');
 
   useEffect(() => {
-    try { WebApp.ready(); WebApp.expand(); } catch(e) {}
+    try { 
+        WebApp.ready(); 
+        WebApp.expand();
+        WebApp.setHeaderColor('#fdfcf0'); 
+        WebApp.setBackgroundColor('#fdfcf0');
+    } catch(e) {}
+    
     const init = async () => {
       try {
         const res = await login();
         if (res?.data) {
             setUser(res.data.user);
             setPets(res.data.pets || []);
-            const startParam = WebApp.initDataUnsafe?.start_param;
-            if (startParam?.startsWith('join_')) {
-                const petId = startParam.replace('join_', '');
-                const joinRes = await joinPet(petId);
-                if (joinRes?.data?.pet) {
-                    setCurrentPet(joinRes.data.pet);
-                    setView('game');
-                }
-            }
         }
       } catch (err) { console.error(err); } 
       finally { setLoading(false); }
@@ -43,118 +48,111 @@ function App() {
     init();
   }, []);
 
-  const handleCreatePet = async () => {
-    try {
-      const res = await createPet(null, newName, 'capsule');
-      if (res.data?.pet) {
-          setPets(p => [...p, res.data.pet]);
-          setCurrentPet(res.data.pet);
-          setCreationStep(false);
-          setView('game');
-      }
-    } catch (err) { alert('Error'); }
+  const triggerHaptic = (type = 'light') => {
+      try { WebApp.HapticFeedback.impactOccurred(type); } catch(e) {}
+  };
+
+  const handleSelect = (idx) => {
+      if (idx === activeIdx) return;
+      setActiveIdx(idx);
+      triggerHaptic('medium');
+  };
+
+  const handleStart = (pet) => {
+      triggerHaptic('heavy');
+      setCurrentPet(pet);
+      setView('game');
   };
 
   const getCardStyle = (idx) => {
-      const isCenter = idx === activeIdx;
-      const dist = Math.abs(idx - activeIdx);
-      // Simple visibility logic for carousel
-      if (dist > 1) return { display: 'none' };
-      
+      const dist = idx - activeIdx;
+      if (Math.abs(dist) > 1) return { display: 'none' };
       return {
-          zIndex: isCenter ? 10 : 5,
-          scale: isCenter ? 1 : 0.85,
-          opacity: isCenter ? 1 : 0.5,
-          filter: isCenter ? 'none' : 'blur(2px)',
-          x: (idx - activeIdx) * 220, // spacing
+          zIndex: dist === 0 ? 10 : 5,
+          scale: dist === 0 ? 1 : 0.8,
+          opacity: dist === 0 ? 1 : 0.4,
+          filter: dist === 0 ? 'none' : 'blur(4px) grayscale(50%)',
+          x: dist * 240,
+          rotateY: dist * -20,
           position: 'absolute'
       };
   };
 
   return (
-    <div className="app-container" style={{ background: '#050508', minHeight: '100vh', color: 'white', overflow: 'hidden' }}>
-      {loading && (
-          <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Loader2 className="animate-spin" />
-          </div>
-      )}
+    <div className="app-container" style={{ background: '#fdfcf0', minHeight: '100vh', color: '#2d3436', overflow: 'hidden' }}>
+      <AnimatePresence>
+        {loading && (
+            <motion.div exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: '#fdfcf0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Loader2 className="animate-spin" color="#6c5ce7" />
+            </motion.div>
+        )}
+      </AnimatePresence>
 
       {!loading && (
         <main style={{ width: '100%', height: '100vh', position: 'relative' }}>
           
-          {/* LOBBY CAROUSEL */}
           {view === 'lobby' && !creationStep && (
             <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <header style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>LOBBY</h2>
-                <div className="hud-capsule" style={{ padding: '4px 8px' }}><UserIcon size={14} /></div>
+              <header style={{ padding: '30px 25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 900, color: '#2d3436' }}>Home</h2>
+                    <div style={{ fontSize: '12px', opacity: 0.5, fontWeight: 700 }}>SELECT COMPANION</div>
+                </div>
+                <div className="hud-capsule" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                    <UserIcon size={16} color="#6c5ce7" />
+                </div>
               </header>
 
-              <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', perspective: '1000px' }}>
                 {pets.map((pet, idx) => (
                   <motion.div
                     key={pet._id}
                     animate={getCardStyle(idx)}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    onClick={() => {
-                        if (idx === activeIdx) { setCurrentPet(pet); setView('game'); }
-                        else setActiveIdx(idx);
-                    }}
-                    style={{ 
-                        width: '240px', height: '380px', 
-                        background: 'rgba(255,255,255,0.03)', 
-                        borderRadius: '30px', 
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-                        cursor: 'pointer'
-                    }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+                    onClick={() => idx === activeIdx ? handleStart(pet) : handleSelect(idx)}
+                    className="carousel-card"
                   >
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, position: 'relative' }}>
                         <ModelViewer type="pet" color={pet.skinColor} accessories={pet.accessories} isLobby={true} />
                     </div>
-                    <div style={{ padding: '15px', textAlign: 'center', background: 'rgba(0,0,0,0.2)' }}>
-                        <h3 style={{ margin: 0, fontSize: '20px' }}>{pet.name}</h3>
-                        <div style={{ fontSize: '10px', opacity: 0.6 }}>LVL {pet.level}</div>
+                    <div style={{ padding: '20px', textAlign: 'center', background: 'white' }}>
+                        <h3 style={{ margin: 0, fontSize: '22px', fontWeight: 900 }}>{pet.name}</h3>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '8px' }}>
+                            <div className="badge"><Clock size={10} /> {getAgeString(pet.createdAt)}</div>
+                            <div className="badge">LVL {pet.level}</div>
+                        </div>
                     </div>
                   </motion.div>
                 ))}
                 
-                {/* Add New Card (Always at the end) */}
                 <motion.div
                     animate={getCardStyle(pets.length)}
-                    onClick={() => {
-                        if (pets.length === activeIdx) setCreationStep(true);
-                        else setActiveIdx(pets.length);
-                    }}
-                    style={{ width: '240px', height: '380px', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    onClick={() => pets.length === activeIdx ? setCreationStep(true) : handleSelect(pets.length)}
+                    style={{ width: '260px', height: '420px', border: '2px dashed rgba(0,0,0,0.1)', borderRadius: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(0,0,0,0.02)' }}
                 >
-                    <Plus size={30} opacity={0.3} />
+                    <Plus size={40} opacity={0.2} />
+                    <span style={{ fontSize: '12px', fontWeight: 800, opacity: 0.2, marginTop: '10px' }}>NEW FRIEND</span>
                 </motion.div>
               </div>
               
-              <div style={{ height: '50px', textAlign: 'center', opacity: 0.4, fontSize: '10px' }}>
-                  SWIPE OR TAP TO SELECT
+              <div style={{ padding: '40px', textAlign: 'center' }}>
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleStart(pets[activeIdx])}
+                    style={{ width: '100%', maxWidth: '200px', padding: '18px', borderRadius: '20px', background: '#6c5ce7', color: 'white', fontWeight: 900, border: 'none', boxShadow: '0 10px 25px rgba(108, 92, 231, 0.3)' }}
+                  >
+                      START JOURNEY
+                  </motion.button>
               </div>
             </div>
           )}
 
-          {/* CREATION */}
-          {creationStep && (
-            <div style={{ padding: '30px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <h2 style={{ fontSize: '32px', marginBottom: '20px' }}>NEW FRIEND</h2>
-              <input value={newName} onChange={e => setNewName(e.target.value)} style={{ padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', marginBottom: '20px' }} />
-              <button onClick={handleCreatePet} style={{ padding: '15px', borderRadius: '12px', background: 'white', color: 'black', fontWeight: 'bold' }}>CREATE</button>
-              <button onClick={() => setCreationStep(false)} style={{ marginTop: '15px', background: 'transparent', color: 'white', opacity: 0.5 }}>CANCEL</button>
-            </div>
-          )}
-
-          {/* GAME VIEW */}
           {view === 'game' && currentPet && (
             <div style={{ height: '100vh', position: 'relative' }}>
-               <button onClick={() => setView('lobby')} style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100, background: 'rgba(0,0,0,0.3)', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', color: 'white' }}>
-                 <ArrowRight size={16} style={{ transform: 'rotate(180deg)' }} />
+               <button onClick={() => { setView('lobby'); triggerHaptic(); }} style={{ position: 'absolute', top: '25px', left: '25px', zIndex: 100, background: 'white', width: '40px', height: '40px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}>
+                 <ArrowRight size={18} color="#2d3436" style={{ transform: 'rotate(180deg)' }} />
                </button>
-               <Suspense fallback={<div className="loader-center"><Loader2 className="animate-spin" /></div>}>
+               <Suspense fallback={null}>
                   <Pet pet={currentPet} onUpdate={setCurrentPet} />
                   <Actions pet={currentPet} onUpdate={setCurrentPet} />
                </Suspense>
