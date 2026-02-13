@@ -8,8 +8,8 @@ import QuestsModal from './QuestsModal';
 const getAge = (date) => {
     const diff = new Date() - new Date(date);
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
     if (days > 0) return `${days}d`;
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
     return `${hours}h`;
 };
 
@@ -25,10 +25,10 @@ const Pet = ({ pet, activeAction, onUpdate }) => {
 
   const addFloatingText = (text, color, icon) => {
     const id = Date.now() + Math.random();
-    setFloatingTexts(prev => [...prev, { id, text, color, icon, x: Math.random() * 60 - 30, y: 0 }]);
+    setFloatingTexts(prev => [...prev, { id, text, color, icon, x: Math.random() * 40 - 20, y: 0 }]);
     setTimeout(() => {
       setFloatingTexts(prev => prev.filter(item => item.id !== id));
-    }, 2000);
+    }, 1500);
   };
 
   useEffect(() => {
@@ -52,59 +52,45 @@ const Pet = ({ pet, activeAction, onUpdate }) => {
 
   if (!pet) return null;
 
-  const StatBar = ({ icon: Icon, value, color, label }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-        <div style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon size={14} color={color} />
+  const StatBar = ({ icon: Icon, value, color }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+        <div style={{ width: '20px', height: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon size={10} color={color} />
         </div>
-        <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden', width: '80px' }}>
+        <div style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden', width: '50px' }}>
             <motion.div 
                 initial={false} 
                 animate={{ width: `${Math.max(5, value)}%` }} 
                 transition={{ type: 'spring', stiffness: 40, damping: 15 }} 
-                style={{ height: '100%', background: color, boxShadow: `0 0 10px ${color}` }} 
+                style={{ height: '100%', background: color }} 
             />
         </div>
     </div>
   );
 
   return (
-    <div style={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden', background: 'radial-gradient(circle at 50% 50%, #1e1e24 0%, #000 100%)' }}>
+    <div style={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden', background: '#050508' }}>
       
-      {/* Background Decor */}
-      <div className="nebula-bg" />
-
-      {/* Top HUD */}
-      <div style={{ position: 'absolute', top: '70px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 100 }}>
-        
-        {/* Left: Identity */}
-        <div className="glass-panel-ultra" style={{ padding: '12px 16px', borderRadius: '20px', display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: `linear-gradient(135deg, ${pet.skinColor}, #a29bfe)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: 900, boxShadow: `0 0 15px ${pet.skinColor}66` }}>
+      {/* Top HUD (Compact) */}
+      <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '10px', alignItems: 'center', zIndex: 90 }}>
+        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '12px', display: 'flex', gap: '8px', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: pet.skinColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 900 }}>
                 {pet.level}
             </div>
             <div>
-                <div style={{ fontSize: '16px', fontWeight: 900, lineHeight: 1 }}>{pet.name}</div>
-                <div style={{ fontSize: '11px', opacity: 0.6, fontWeight: 700, letterSpacing: '0.5px' }}>{age} TOGETHER</div>
+                <div style={{ fontSize: '12px', fontWeight: 800 }}>{pet.name}</div>
+                <div style={{ fontSize: '9px', opacity: 0.5 }}>{age}</div>
             </div>
         </div>
 
-        {/* Right: Quests & XP */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-end' }}>
-            <motion.button 
-                whileTap={{ scale: 0.9 }} 
-                onClick={() => setShowQuests(true)} 
-                className="glass-panel-ultra" 
-                style={{ width: '44px', height: '44px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}
-            >
-                <ClipboardList size={20} color="white" />
-                {pet.dailyQuests?.some(q => q.completed && !q.claimed) && <div style={{ width: '10px', height: '10px', background: '#ff0055', borderRadius: '50%', position: 'absolute', top: '8px', right: '8px', border: '2px solid #1e1e24' }} />}
-            </motion.button>
-            
-             <div className="glass-panel-ultra" style={{ padding: '8px 12px', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Star size={12} color="#fdcb6e" fill="#fdcb6e" />
-                <span className="hud-text" style={{ fontSize: '12px', fontWeight: 700 }}>{pet.xp} XP</span>
-            </div>
-        </div>
+        <motion.button 
+            whileTap={{ scale: 0.9 }} 
+            onClick={() => setShowQuests(true)} 
+            style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', border: '1px solid rgba(255,255,255,0.05)' }}
+        >
+            <ClipboardList size={16} color="white" />
+            {pet.dailyQuests?.some(q => q.completed && !q.claimed) && <div style={{ width: '6px', height: '6px', background: '#ff0055', borderRadius: '50%', position: 'absolute', top: '6px', right: '6px' }} />}
+        </motion.button>
       </div>
 
       {/* 3D Scene */}
@@ -115,7 +101,9 @@ const Pet = ({ pet, activeAction, onUpdate }) => {
           shape={pet.shape}
           accessories={pet.accessories}
           customTextures={pet.customTextures}
-          background={pet.currentBackground}
+          // Pass new props
+          isSleeping={activeAction === 'sleep'} 
+          mood={pet.mood}
           onPetClick={() => {
               if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
               addFloatingText('', '#ff007a', Heart);
@@ -128,21 +116,21 @@ const Pet = ({ pet, activeAction, onUpdate }) => {
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 50 }}>
           <AnimatePresence>
             {floatingTexts.map(item => (
-                <motion.div key={item.id} initial={{ opacity: 0, y: 0, scale: 0.5 }} animate={{ opacity: 1, y: -150, scale: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', left: `calc(50% + ${item.x}px)`, top: '40%', color: item.color, fontWeight: '900', fontSize: '36px', textShadow: '0 0 20px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'Rajdhani' }}>
-                    {item.icon && <item.icon size={36} fill={item.color} />}
+                <motion.div key={item.id} initial={{ opacity: 0, y: 0, scale: 0.5 }} animate={{ opacity: 1, y: -100, scale: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', left: `calc(50% + ${item.x}px)`, top: '40%', color: item.color, fontWeight: '900', fontSize: '24px', textShadow: '0 0 10px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {item.icon && <item.icon size={24} fill={item.color} />}
                     {item.text}
                 </motion.div>
             ))}
           </AnimatePresence>
       </div>
 
-      {/* Stats Panel (Right Side) */}
-      <div style={{ position: 'absolute', right: '20px', top: '55%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: '8px', zIndex: 90 }}>
-        <div className="glass-panel-ultra" style={{ padding: '16px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <StatBar icon={Activity} value={pet.health} color="#ff0055" label="HP" />
-            <StatBar icon={Utensils} value={pet.hunger} color="#ff7675" label="FD" />
-            <StatBar icon={Zap} value={pet.energy} color="#00d2ff" label="EN" />
-            <StatBar icon={Smile} value={pet.mood} color="#fdcb6e" label="MD" />
+      {/* Stats Panel (Right Side - Compact) */}
+      <div style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 90 }}>
+        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '8px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <StatBar icon={Activity} value={pet.health} color="#ff0055" />
+            <StatBar icon={Utensils} value={pet.hunger} color="#ff7675" />
+            <StatBar icon={Zap} value={pet.energy} color="#00d2ff" />
+            <StatBar icon={Smile} value={pet.mood} color="#fdcb6e" />
         </div>
       </div>
 
