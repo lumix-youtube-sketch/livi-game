@@ -72,3 +72,97 @@
   backdrop-filter: blur(25px) saturate(180%);
   border: 1px solid rgba(255,255,255,0.08);
 }
+
+/* --- DETAILED CHARACTER BACKGROUNDS --- */
+
+/* 1. Cyber Neon (Cyberpunk) */
+.bg-cyber-neon {
+  background: radial-gradient(circle at 20% 20%, rgba(108, 92, 231, 0.4), transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(253, 121, 168, 0.4), transparent 50%),
+              linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  box-shadow: inset 0 0 100px rgba(108, 92, 231, 0.2);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bg-cyber-neon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.3;
+}
+.bg-cyber-neon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.6) 100%);
+}
+
+/* 2. Zen Garden (Nature) */
+.bg-zen-garden {
+  background: radial-gradient(circle at 50% 0%, rgba(85, 239, 196, 0.4), transparent 70%),
+              linear-gradient(180deg, #134e5e 0%, #71b280 100%);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bg-zen-garden::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.4) 100%);
+}
+
+/* 3. Abyssal Depths (Ocean) */
+.bg-abyssal-depths {
+  background: radial-gradient(circle at 70% 30%, rgba(0, 206, 201, 0.3), transparent 60%),
+              linear-gradient(225deg, #000000 0%, #0a3d62 100%);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bg-abyssal-depths::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200%;
+  background: repeating-linear-gradient(0deg, transparent, rgba(255, 255, 255, 0.02) 4px, transparent 8px);
+  animation: waveMotion 20s linear infinite;
+  opacity: 0.5;
+}
+
+/* 4. Celestial Void (Space) */
+.bg-celestial-void {
+  background: radial-gradient(circle at 30% 70%, rgba(241, 196, 15, 0.15), transparent 40%),
+              radial-gradient(circle at 80% 20%, rgba(155, 89, 182, 0.3), transparent 50%),
+              linear-gradient(135deg, #000428 0%, #004e92 100%);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bg-celestial-void::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('https://www.transparenttextures.com/patterns/stardust.png'), 
+              radial-gradient(circle, transparent 40%, rgba(0,0,0,0.7) 100%);
+  opacity: 0.4;
+}
+
+/* 5. Sunset Mirage (Desert/Sky) */
+.bg-sunset-mirage {
+  background: radial-gradient(circle at 50% 20%, rgba(255, 118, 117, 0.5), transparent 60%),
+              linear-gradient(180deg, #2c3e50 0%, #fd746c 100%);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bg-sunset-mirage::before {
+  content: "";
+  position: absolute;
+  bottom: 0%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 40%;
+  background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+}
+
+@keyframes waveMotion {
+  from { background-position: 0 0; }
+  to { background-position: 0 400px; }
+}

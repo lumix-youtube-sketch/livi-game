@@ -5,7 +5,7 @@ import ModelViewer from './ModelViewer';
 import { claimQuest } from '../api';
 import QuestsModal from './QuestsModal';
 
-const Pet = ({ pet, activeAction, onUpdate }) => {
+const Pet = ({ pet, activeAction, onUpdate, bgClass }) => {
   const [floatingTexts, setFloatingTexts] = useState([]);
   const [showQuests, setShowQuests] = useState(false);
 
@@ -25,7 +25,7 @@ const Pet = ({ pet, activeAction, onUpdate }) => {
   if (!pet) return null;
 
   return (
-    <div style={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden' }}>
+    <div className={bgClass} style={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden' }}>
       
       {/* HEADER: Co-op Identity */}
       <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between', zIndex: 100 }}>

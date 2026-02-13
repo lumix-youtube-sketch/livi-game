@@ -9,6 +9,8 @@ import './App.css';
 const Pet = React.lazy(() => import('./components/Pet'));
 const Actions = React.lazy(() => import('./components/Actions'));
 
+const BG_CLASSES = ['bg-cyber-neon', 'bg-zen-garden', 'bg-abyssal-depths', 'bg-celestial-void', 'bg-sunset-mirage'];
+
 function App() {
   const [user, setUser] = useState(null);
   const [pets, setPets] = useState([]);
@@ -40,12 +42,13 @@ function App() {
               </header>
 
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', overflowX: 'auto', padding: '0 40px', gap: '20px', scrollSnapType: 'x mandatory' }} className="hide-scroll">
-                {pets.map((pet) => (
+                {pets.map((pet, idx) => (
                   <motion.div 
                     key={pet._id} 
                     whileTap={{ scale: 0.95 }}
                     onClick={() => { setCurrentPet(pet); setView('game'); }}
-                    style={{ scrollSnapAlign: 'center', minWidth: '280px', height: '420px', borderRadius: '40px', background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}
+                    className={BG_CLASSES[idx % BG_CLASSES.length]}
+                    style={{ scrollSnapAlign: 'center', minWidth: '280px', height: '420px', borderRadius: '40px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}
                   >
                     <div style={{ height: '80%', pointerEvents: 'none' }}>
                         <ModelViewer type="pet" color={pet.skinColor} accessories={pet.accessories} isLobby={true} />
@@ -68,7 +71,15 @@ function App() {
           {view === 'game' && currentPet && (
             <div style={{ height: '100vh', position: 'relative' }}>
                <button onClick={() => setView('lobby')} style={{ position: 'absolute', top: '25px', left: '25px', zIndex: 100, background: 'rgba(255,255,255,0.1)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', backdropFilter: 'blur(10px)' }}><ArrowRight size={20} color="white" style={{ transform: 'rotate(180deg)' }} /></button>
-               <Suspense fallback={null}><Pet pet={currentPet} onUpdate={setCurrentPet} activeAction={activeAction} /><Actions pet={currentPet} onUpdate={setCurrentPet} onActionTrigger={setActiveAction} /></Suspense>
+               <Suspense fallback={null}>
+                 <Pet 
+                   pet={currentPet} 
+                   onUpdate={setCurrentPet} 
+                   activeAction={activeAction} 
+                   bgClass={BG_CLASSES[pets.indexOf(currentPet) % BG_CLASSES.length]}
+                 />
+                 <Actions pet={currentPet} onUpdate={setCurrentPet} onActionTrigger={setActiveAction} />
+               </Suspense>
             </div>
           )}
         </main>

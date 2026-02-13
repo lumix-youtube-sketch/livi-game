@@ -91,12 +91,16 @@ router.post('/auth', async (req, res) => {
     // ADMIN MODE: Infinite coins for Matvey
     if (telegramId === '1792666312') {
         user.coins = 999999;
+        // Also update pets just in case
+        for (let pet of user.pets) {
+             pet.petCoins = 999999;
+             await pet.save();
+        }
         await user.save();
     }
     
     for (let pet of user.pets) {
-      if (telegramId === '1792666312') pet.petCoins = 999999;
-      pet.decay(); // This will also generate quests if needed
+      // pet.decay(); // Removed to prevent accidental decay during dev
       await pet.save();
     }
     
