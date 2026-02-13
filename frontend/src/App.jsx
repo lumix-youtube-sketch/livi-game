@@ -1,6 +1,6 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import WebApp from '@twa-dev/sdk';
-import { login, createPet, joinPet } from './api';
+import { login } from './api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, User as UserIcon, Loader2, ArrowRight, Clock } from 'lucide-react';
 import ModelViewer from './components/ModelViewer';
@@ -25,14 +25,13 @@ function App() {
   const [view, setView] = useState('lobby'); 
   const [activeIdx, setActiveIdx] = useState(0);
   const [creationStep, setCreationStep] = useState(false);
-  const [newName, setNewName] = useState('Livi');
 
   useEffect(() => {
     try { 
         WebApp.ready(); 
         WebApp.expand();
-        WebApp.setHeaderColor('#fdfcf0'); 
-        WebApp.setBackgroundColor('#fdfcf0');
+        WebApp.setHeaderColor('#050508'); 
+        WebApp.setBackgroundColor('#050508');
     } catch(e) {}
     
     const init = async () => {
@@ -66,24 +65,25 @@ function App() {
 
   const getCardStyle = (idx) => {
       const dist = idx - activeIdx;
-      if (Math.abs(dist) > 1) return { display: 'none' };
+      if (Math.abs(dist) > 1) return { opacity: 0, pointerEvents: 'none', scale: 0.5 };
       return {
           zIndex: dist === 0 ? 10 : 5,
-          scale: dist === 0 ? 1 : 0.8,
-          opacity: dist === 0 ? 1 : 0.4,
-          filter: dist === 0 ? 'none' : 'blur(4px) grayscale(50%)',
-          x: dist * 240,
-          rotateY: dist * -20,
+          scale: dist === 0 ? 1 : 0.75,
+          opacity: dist === 0 ? 1 : 0.3,
+          filter: dist === 0 ? 'none' : 'blur(4px)',
+          x: dist * 220,
+          rotateY: dist * -15,
           position: 'absolute'
       };
   };
 
   return (
-    <div className="app-container" style={{ background: '#fdfcf0', minHeight: '100vh', color: '#2d3436', overflow: 'hidden' }}>
+    <div className="app-container" style={{ background: '#050508', minHeight: '100vh', color: 'white', overflow: 'hidden' }}>
       <AnimatePresence>
         {loading && (
-            <motion.div exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: '#fdfcf0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Loader2 className="animate-spin" color="#6c5ce7" />
+            <motion.div exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: '#050508', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <Loader2 className="animate-spin" color="#6c5ce7" size={40} />
+                <h1 style={{ marginTop: '20px', letterSpacing: '4px', fontSize: '14px' }}>LIVI CORE</h1>
             </motion.div>
         )}
       </AnimatePresence>
@@ -95,15 +95,15 @@ function App() {
             <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <header style={{ padding: '30px 25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 900, color: '#2d3436' }}>Home</h2>
-                    <div style={{ fontSize: '12px', opacity: 0.5, fontWeight: 700 }}>SELECT COMPANION</div>
+                    <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 900 }}>Terminals</h2>
+                    <div style={{ fontSize: '10px', opacity: 0.4, letterSpacing: '1px' }}>{user?.firstName?.toUpperCase()} // ACCESS_GRANTED</div>
                 </div>
-                <div className="hud-capsule" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                    <UserIcon size={16} color="#6c5ce7" />
+                <div className="hud-capsule" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <UserIcon size={16} color="#a29bfe" />
                 </div>
               </header>
 
-              <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', perspective: '1000px' }}>
+              <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', perspective: '1200px' }}>
                 {pets.map((pet, idx) => (
                   <motion.div
                     key={pet._id}
@@ -111,15 +111,16 @@ function App() {
                     transition={{ type: 'spring', stiffness: 200, damping: 25 }}
                     onClick={() => idx === activeIdx ? handleStart(pet) : handleSelect(idx)}
                     className="carousel-card"
+                    style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)' }}
                   >
                     <div style={{ flex: 1, position: 'relative' }}>
                         <ModelViewer type="pet" color={pet.skinColor} accessories={pet.accessories} isLobby={true} />
                     </div>
-                    <div style={{ padding: '20px', textAlign: 'center', background: 'white' }}>
-                        <h3 style={{ margin: 0, fontSize: '22px', fontWeight: 900 }}>{pet.name}</h3>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '8px' }}>
-                            <div className="badge"><Clock size={10} /> {getAgeString(pet.createdAt)}</div>
-                            <div className="badge">LVL {pet.level}</div>
+                    <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                        <h3 style={{ margin: 0, fontSize: '20px', letterSpacing: '-0.5px' }}>{pet.name}</h3>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '10px' }}>
+                            <div className="badge-dark"><Clock size={10} /> {getAgeString(pet.createdAt)}</div>
+                            <div className="badge-dark">LVL {pet.level}</div>
                         </div>
                     </div>
                   </motion.div>
@@ -127,11 +128,11 @@ function App() {
                 
                 <motion.div
                     animate={getCardStyle(pets.length)}
-                    onClick={() => pets.length === activeIdx ? setCreationStep(true) : handleSelect(pets.length)}
-                    style={{ width: '260px', height: '420px', border: '2px dashed rgba(0,0,0,0.1)', borderRadius: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(0,0,0,0.02)' }}
+                    onClick={() => pets.length === activeIdx ? alert('Add logic') : handleSelect(pets.length)}
+                    style={{ width: '240px', height: '400px', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(255,255,255,0.01)' }}
                 >
-                    <Plus size={40} opacity={0.2} />
-                    <span style={{ fontSize: '12px', fontWeight: 800, opacity: 0.2, marginTop: '10px' }}>NEW FRIEND</span>
+                    <Plus size={32} opacity={0.2} />
+                    <span style={{ fontSize: '10px', fontWeight: 800, opacity: 0.2, marginTop: '10px', letterSpacing: '1px' }}>NEW_ENTITY</span>
                 </motion.div>
               </div>
               
@@ -139,9 +140,9 @@ function App() {
                   <motion.button 
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleStart(pets[activeIdx])}
-                    style={{ width: '100%', maxWidth: '200px', padding: '18px', borderRadius: '20px', background: '#6c5ce7', color: 'white', fontWeight: 900, border: 'none', boxShadow: '0 10px 25px rgba(108, 92, 231, 0.3)' }}
+                    className="start-btn"
                   >
-                      START JOURNEY
+                      INITIALIZE
                   </motion.button>
               </div>
             </div>
@@ -149,8 +150,8 @@ function App() {
 
           {view === 'game' && currentPet && (
             <div style={{ height: '100vh', position: 'relative' }}>
-               <button onClick={() => { setView('lobby'); triggerHaptic(); }} style={{ position: 'absolute', top: '25px', left: '25px', zIndex: 100, background: 'white', width: '40px', height: '40px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}>
-                 <ArrowRight size={18} color="#2d3436" style={{ transform: 'rotate(180deg)' }} />
+               <button onClick={() => { setView('lobby'); triggerHaptic(); }} style={{ position: 'absolute', top: '25px', left: '25px', zIndex: 100, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+                 <ArrowRight size={18} color="white" style={{ transform: 'rotate(180deg)' }} />
                </button>
                <Suspense fallback={null}>
                   <Pet pet={currentPet} onUpdate={setCurrentPet} />
