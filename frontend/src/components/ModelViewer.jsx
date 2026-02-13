@@ -152,7 +152,7 @@ const EnvironmentHelper = ({ id }) => {
 const ModelViewer = ({ type, itemId, color, shape, accessories, customTextures, background, onPetClick, style, isLobby }) => {
   return (
     <div style={{ width: '100%', height: '100%', minHeight: '150px', ...style }}>
-      <Canvas shadows dpr={[1, 2]} gl={{ antialias: true }}>
+      <Canvas shadows dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
         {/* Cinematic Lighting */}
         {!isLobby && <color attach="background" args={[background === 'bg_space' ? '#020205' : background === 'bg_park' ? '#87ceeb' : '#0f0f14']} />}
         <PerspectiveCamera makeDefault position={[0, 0, isLobby ? 5.5 : 6]} fov={35} />
@@ -177,7 +177,7 @@ const ModelViewer = ({ type, itemId, color, shape, accessories, customTextures, 
               )}
           </Selection>
         </Suspense>
-        <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI/1.6} />
+        <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI/1.6} autoRotate={isLobby} autoRotateSpeed={2} />
       </Canvas>
     </div>
   );
