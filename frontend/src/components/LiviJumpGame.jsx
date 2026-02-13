@@ -112,7 +112,7 @@ const LiviJumpGame = ({ onEnd }) => {
       ctx.fillStyle = '#6c5ce7';
       // Simple Livi body
       ctx.beginPath();
-      ctx.roundRect(50, livi.y, livi.width, livi.height, 10);
+      ctx.rect(50, livi.y, livi.width, livi.height);
       ctx.fill();
       // Eyes
       ctx.fillStyle = 'white';
@@ -134,7 +134,7 @@ const LiviJumpGame = ({ onEnd }) => {
         
         // Draw obstacle (Cactus-like)
         ctx.beginPath();
-        ctx.roundRect(obs.x, groundY - obs.height, obs.width, obs.height, 5);
+        ctx.rect(obs.x, groundY - obs.height, obs.width, obs.height);
         ctx.fill();
 
         // Collision detection
@@ -176,21 +176,31 @@ const LiviJumpGame = ({ onEnd }) => {
   }, [gameStarted, gameOver]);
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zHost: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', touchAction: 'none' }} onClick={jump}>
-      <button onClick={(e) => { e.stopPropagation(); onEnd(score); }} style={{ position: 'absolute', top: '40px', right: '30px', background: 'none', border: 'none', color: 'white' }}>
-        <X size={32} />
+    <div style={{ 
+      position: 'fixed', 
+      inset: 0, 
+      background: '#000000', 
+      zIndex: 9999, 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      touchAction: 'none' 
+    }} onClick={jump}>
+      <button onClick={(e) => { e.stopPropagation(); onEnd(score); }} style={{ position: 'absolute', top: '30px', right: '30px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', width: '44px', height: '44px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}>
+        <X size={24} />
       </button>
 
-      <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-        <div style={{ fontSize: '14px', opacity: 0.6, letterSpacing: '2px' }}>LIVI JUMP</div>
-        <div style={{ fontSize: '48px', fontWeight: 900, fontFamily: 'monospace' }}>{score.toString().padStart(5, '0')}</div>
+      <div style={{ marginBottom: '20px', textAlign: 'center', zIndex: 10001 }}>
+        <div style={{ fontSize: '12px', opacity: 0.6, letterSpacing: '4px', color: '#6c5ce7', fontWeight: 900 }}>LIVI JUMP</div>
+        <div style={{ fontSize: '56px', fontWeight: 900, fontFamily: 'Rajdhani', color: 'white' }}>{score.toString().padStart(5, '0')}</div>
       </div>
 
       <canvas 
         ref={canvasRef} 
-        width={window.innerWidth > 500 ? 500 : window.innerWidth} 
+        width={window.innerWidth > 500 ? 500 : window.innerWidth - 40} 
         height={300}
-        style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '20px' }}
+        style={{ background: '#0a0a0a', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
       />
 
       <AnimatePresence>
